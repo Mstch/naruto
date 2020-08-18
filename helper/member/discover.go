@@ -1,8 +1,8 @@
 package member
 
 import (
-	"github.com/Mstch/raft/helper/logger"
-	"github.com/Mstch/raft/helper/util"
+	"github.com/Mstch/naruto/helper/logger"
+	"github.com/Mstch/naruto/helper/util"
 	"net"
 	"strconv"
 	"strings"

@@ -1,8 +1,8 @@
 package member
 
 import (
-	"github.com/Mstch/raft/conf"
-	"github.com/Mstch/raft/helper/logger"
+	"github.com/Mstch/naruto/conf"
+	"github.com/Mstch/naruto/helper/logger"
 )
 
 func Join(m *Member) {
@@ -14,7 +14,7 @@ func Join(m *Member) {
 		for _, callback := range joinCallbacks {
 			go callback(m)
 		}
-		if len(ConnectedMembers) >= conf.Conf.LaunchSize {
+		if len(ConnectedMembers) >= int(conf.Conf.LaunchSize) {
 			go Stale()
 			logger.Info("加入集群成功,停止广播")
 		}

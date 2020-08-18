@@ -1,7 +1,7 @@
 package timer
 
 import (
-	"github.com/Mstch/raft/helper/logger"
+	"github.com/Mstch/naruto/helper/logger"
 	"math/rand"
 	"time"
 )

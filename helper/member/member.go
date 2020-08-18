@@ -1,7 +1,7 @@
 package member
 
 import (
-	"github.com/Mstch/raft/conf"
+	"github.com/Mstch/naruto/conf"
 	"net"
 	"net/rpc"
 	"sync"

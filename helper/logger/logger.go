@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"github.com/Mstch/raft/conf"
+	"github.com/Mstch/naruto/conf"
 	"log"
 	"os"
 )
