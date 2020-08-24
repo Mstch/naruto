@@ -1,5 +1,5 @@
 package raft
 
-func broadcastHeartbeat(){
+func action(){
 
 }

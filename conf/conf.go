@@ -8,9 +8,9 @@ import (
 )
 
 type Config struct {
-	Port       int32  `yaml:"port"`
-	UPort      int32  `yaml:"uport"`
-	LaunchSize int32  `yaml:"launch_size"`
+	Port       uint32  `yaml:"port"`
+	UPort      uint32  `yaml:"uport"`
+	LaunchSize uint32  `yaml:"launch_size"`
 	LogLevel   string `yaml:"log_level"`
 }
 
@@ -30,11 +30,11 @@ func init() {
 	}
 	port, err := strconv.Atoi(os.Getenv("PORT"))
 	if err == nil {
-		Conf.Port = int32(port)
+		Conf.Port = uint32(port)
 	}
 	launchSize, err := strconv.Atoi(os.Getenv("LAUNCH_SIZE"))
 	if err == nil {
-		Conf.LaunchSize = int32(launchSize)
+		Conf.LaunchSize = uint32(launchSize)
 	}
 	logLevel := os.Getenv("LOG_LEVEL")
 	if logLevel != "" {

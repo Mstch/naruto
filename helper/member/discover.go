@@ -26,10 +26,7 @@ func getConn(remoteAddress string) *net.UDPConn {
 
 func hereIam() {
 	udpConn := getConn("255.255.255.255:" + strconv.Itoa(int(self.UPort)))
-	buf, err := util.Int32ToBytes(self.Port)
-	if err != nil {
-		panic(err)
-	}
+	buf := util.UInt32ToBytes(self.Port)
 	for range discoverTicker.C {
 		go func(buf []byte) {
 			_, err := udpConn.Write(buf)
@@ -43,11 +40,8 @@ func hereIam() {
 
 func iKnowYouThere(addr string) {
 	udpConn := getConn(addr)
-	buf, err := util.Int32ToBytes(-1 * self.Port)
-	if err != nil {
-		panic(err)
-	}
-	_, err = udpConn.Write(buf)
+	buf := util.Int32ToBytes(-1 * int32(self.Port))
+	_, err := udpConn.Write(buf)
 	if err != nil {
 		logger.Error("发送UDP响应包到%s失败", udpConn.RemoteAddr().String())
 	}
@@ -68,10 +62,7 @@ func handleDiscovery() {
 			panic(err)
 		}
 		go func(addr net.Addr, buf []byte, n int) {
-			port, err := util.BytesToInt32(buf[:n])
-			if err != nil {
-				panic(err)
-			}
+			port := util.BytesToUInt32(buf[:n])
 			ip := strings.Split(addr.String(), ":")[0]
 			if _, isSelf := localIp[ip]; !isSelf {
 				logger.Debug("收到来自%s的发现udp包:%d", ip, port)

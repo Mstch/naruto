@@ -12,32 +12,30 @@ var (
 )
 
 type RTimerOption struct {
-	name string
-	task func()
-	min  int
-	max  int
+	Name string
+	Task func()
+	Min  int
+	Max  int
 }
 
-func NewRTimerOption(name string, task func(), min int, max int) *RTimerOption {
-	return &RTimerOption{name: name, task: task, min: min, max: max}
-}
+
 
 func Loop(t *RTimerOption) {
 	if currentTimer == t {
-		timer.Reset(calTimeout(t.min, t.max))
+		timer.Reset(calTimeout(t.Min, t.Max))
 		return
 	}
 	currentTimer = t
-	logger.Info("定时器切换为%s", t.name)
+	logger.Info("定时器切换为%s", t.Name)
 	if !timer.Stop() {
 		<-timer.C
 	}
-	timer = time.NewTimer(calTimeout(t.min, t.max))
+	timer = time.NewTimer(calTimeout(t.Min, t.Max))
 	go func() {
 		for {
 			<-timer.C
-			go t.task()
-			timer.Reset(calTimeout(t.min, t.max))
+			go t.Task()
+			timer.Reset(calTimeout(t.Min, t.Max))
 		}
 	}()
 }

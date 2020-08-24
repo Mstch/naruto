@@ -10,9 +10,9 @@ import (
 
 type Member struct {
 	Ip     string
-	Port   int32
+	Port   uint32
 	Client rpc.Client
-	UPort  int32
+	UPort  uint32
 	Meta   sync.Map
 	//ip:port
 	Address string

@@ -7,20 +7,20 @@ import (
 
 func TestChangeTo(t *testing.T) {
 	fuckTimer := &RTimerOption{
-		name: "fuck",
-		task: func() {
+		Name: "fuck",
+		Task: func() {
 			println("fuck")
 		},
-		min: 1000,
-		max: 2000,
+		Min: 1000,
+		Max: 2000,
 	}
 	fuckedTimer := &RTimerOption{
-		name: "fucked",
-		task: func() {
+		Name: "fucked",
+		Task: func() {
 			println("fucked")
 		},
-		min: 100,
-		max: 100,
+		Min: 100,
+		Max: 100,
 	}
 	Loop(fuckTimer)
 	time.Sleep(5 * time.Second)

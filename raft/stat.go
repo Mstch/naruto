@@ -3,48 +3,37 @@ package raft
 import (
 	"github.com/Mstch/naruto/helper/db"
 	"github.com/Mstch/naruto/helper/util"
+	"sync"
 )
 
-type rule = int32
+type rule = uint32
+type ruleSet = map[rule]struct{}
 
 const (
-	follower rule = iota
-	candidate
-	leader
+	follower  rule = 0x001
+	candidate      = 0x010
+	leader         = 0x100
 )
 
 var key = []byte("node-state")
 
 var (
+	ruleLock        sync.Mutex
 	nodeRule        rule
-	lastCommitIndex int32
-	lastApplyIndex  int32
-	term            int32
+	voteFor         uint32
+	id              uint32
+	lastCommitIndex uint32
+	lastApplyIndex  uint32
+	term            uint32
 )
 
 func loadFromDB() {
 	_, err := db.Get(key, func(src []byte) (interface{}, error) {
-		r, err := util.BytesToInt32(src[:3])
-		if err != nil {
-			return nil, err
-		}
-		lastCommit, err := util.BytesToInt32(src[4:7])
-		if err != nil {
-			return nil, err
-		}
-		lastApply, err := util.BytesToInt32(src[8:11])
-		if err != nil {
-			return nil, err
-		}
-		t, err := util.BytesToInt32(src[12:15])
-		if err != nil {
-			return nil, err
-		}
-
-		nodeRule = r
-		lastCommitIndex = lastCommit
-		lastApplyIndex = lastApply
-		term = t
+		nodeRule = util.BytesToUInt32(src[:4])
+		lastCommitIndex = util.BytesToUInt32(src[4:8])
+		lastApplyIndex = util.BytesToUInt32(src[8:12])
+		term = util.BytesToUInt32(src[12:16])
+		id = util.BytesToUInt32(src[16:20])
 		return nil, nil
 	})
 	if err != nil {
@@ -52,6 +41,14 @@ func loadFromDB() {
 	}
 }
 
+func changeRule(should ruleSet, new rule) error {
+	ruleLock.Lock()
+	if _, ok := should[nodeRule]; ok {
+		nodeRule = new
+	}
+	ruleLock.Unlock()
+	return nil
+}
+
 func becomeCandidate() {
-	
 }
