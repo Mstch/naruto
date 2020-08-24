@@ -9,6 +9,7 @@ type testCodec struct {
 }
 
 func (t testCodec) ReadRequestHeader(request *rpc.Request) error {
+
 	return nil
 }
 

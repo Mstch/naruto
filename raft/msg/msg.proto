@@ -1,10 +1,16 @@
 syntax = "proto3";
 
+message ReqHeader {
+    string method = 1;
+    uint64 seq = 2;
+}
+
 message VoteReq {
     uint32 id = 1;
     uint32 term = 2;
     uint64 lastLogIndex = 3;
     uint32 lastLogTerm = 4;
+    ReqHeader header = 5;
 }
 
 message Cmd {
@@ -30,26 +36,39 @@ message AppendReq {
     uint32 prevLogTerm = 4;
     uint64 leaderCommit = 5;
     repeated Log logs = 6;
+    ReqHeader header = 7;
+
 }
 
 message HeartbeatReq {
     uint32 id = 1;
     uint32 term = 2;
     uint64 leaderCommit = 5;
+    ReqHeader header = 6;
 }
 
+
+message RespHeader {
+    string method = 1;
+    uint64 seq = 2;
+    string err = 3;
+}
 
 message VoteResp {
     uint32 term = 1;
     bool grant = 2;
+    RespHeader header = 3;
 }
 message AppendResp {
     uint32 term = 1;
     bool success = 2;
     uint64 lastLogIndex = 3;
+    RespHeader header = 4;
+
 }
 message HeartbeatResp {
     uint32 term = 1;
     bool success = 2;
     uint64 lastLogIndex = 3;
+    RespHeader header = 4;
 }
