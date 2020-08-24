@@ -1,7 +1,7 @@
 package raft
 
 type raftService interface {
-	vote(req vote, resp voteResp)
+	vote()
 	heartbeat()
 	append()
 	apply()

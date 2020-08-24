@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+message VoteReq {
+    uint32 id = 1;
+    uint32 term = 2;
+    uint64 lastLogIndex = 3;
+    uint32 lastLogTerm = 4;
+}
+
+message Cmd {
+    enum Opt {
+        Get = 0;
+        Set = 1;
+    }
+    Opt opt = 1;
+    string key = 2;
+    string value = 3;
+}
+
+message Log {
+    uint32 term = 2;
+    uint64 index = 3;
+    Cmd cmd = 1;
+}
+
+message AppendReq {
+    uint32 id = 1;
+    uint32 term = 2;
+    uint64 prevLogIndex = 3;
+    uint32 prevLogTerm = 4;
+    uint64 leaderCommit = 5;
+    repeated Log logs = 6;
+}
+
+message HeartbeatReq {
+    uint32 id = 1;
+    uint32 term = 2;
+    uint64 leaderCommit = 5;
+}
+
+
+message VoteResp {
+    uint32 term = 1;
+    bool grant = 2;
+}
+message AppendResp {
+    uint32 term = 1;
+    bool success = 2;
+    uint64 lastLogIndex = 3;
+}
+message HeartbeatResp {
+    uint32 term = 1;
+    bool success = 2;
+    uint64 lastLogIndex = 3;
+}
