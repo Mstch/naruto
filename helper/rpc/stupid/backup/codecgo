@@ -1,0 +1,139 @@
+//package backup
+//
+//import (
+//	"bufio"
+//	"errors"
+//	"github.com/Mstch/naruto/helper/util"
+//	"github.com/gogo/protobuf/proto"
+//	"net"
+//)
+//
+////packet : 是small packet:1，不是small packet:0占首位+uint8 name-length(name限制在127个ascii字符)|(若是small packet则为uint8,否则为uint32)body-len|name|body(protobuf bytes)
+//func read(c net.Conn) (string, proto.Message, error) {
+//	reader := bufio.NewReader(c)
+//	nameLen, err := reader.ReadByte()
+//	smallPacket := false
+//	if err != nil {
+//		return "", nil, err
+//	}
+//	//判断首位是否为1
+//	if nameLen > 0x80 {
+//		smallPacket = true
+//		nameLen <<= 1
+//	}
+//	nameBuf := make([]byte, nameLen)
+//	err = checkRead(int(nameLen), nameBuf, reader)
+//	if err != nil {
+//		return "", nil, err
+//	}
+//	name := string(nameBuf)
+//	if smallPacket {
+//		bodyLen, err := reader.ReadByte()
+//		if err != nil {
+//			return "", nil, err
+//		}
+//		body := make([]byte, bodyLen)
+//		err = checkRead(int(bodyLen), body, reader)
+//		if err != nil {
+//			return "", nil, err
+//		}
+//		err = proto.Unmarshal(body, msg)
+//		if err != nil {
+//			return "", nil, err
+//
+//		}
+//	} else {
+//		bodyLenBuf := make([]byte, 4)
+//		err = checkRead(4, bodyLenBuf, reader)
+//		if err != nil {
+//			return "", nil, err
+//		}
+//		bodyLen := util.BytesToUInt32(bodyLenBuf)
+//		body := make([]byte, bodyLen)
+//		err = checkRead(int(bodyLen), body, reader)
+//		if err != nil {
+//			return "", nil, err
+//		}
+//		err = proto.Unmarshal(body, msg)
+//		if err != nil {
+//			return "", nil, err
+//		}
+//	}
+//	return name, msg, nil
+//}
+//
+//func checkRead(len int, buf []byte, r *bufio.Reader) error {
+//	rl, err := r.Read(buf)
+//	if err != nil {
+//		return err
+//	}
+//	if rl != len {
+//		return errors.New("The length of the read data does not match the calculated\n")
+//	}
+//	return nil
+//}
+//
+//func write(c net.Conn, name string, msg proto.Message) error {
+//	writer := bufio.NewWriter(c)
+//	nameBuf := []byte(name)
+//	nameLen := uint8(len(nameBuf))
+//	body, err := proto.Marshal(msg)
+//	if err != nil {
+//		return err
+//	}
+//	smallPacket := len(body) > 0xff
+//	/**
+//	顺序:nameLen|bodyLen|name|body
+//	*/
+//	if smallPacket {
+//		nameLen += 0x80
+//		bodyLen := uint8(len(body))
+//		err = writer.WriteByte(nameLen)
+//		if err != nil {
+//			return err
+//		}
+//		err = writer.WriteByte(bodyLen)
+//		if err != nil {
+//			return err
+//		}
+//		err = checkWrite(int(nameLen), nameBuf, writer)
+//		if err != nil {
+//			return err
+//		}
+//		err = checkWrite(int(bodyLen), body, writer)
+//		if err != nil {
+//			return err
+//		}
+//	} else {
+//		bodyLen := uint32(len(body))
+//		err = writer.WriteByte(nameLen)
+//		if err != nil {
+//			return err
+//		}
+//		err = checkWrite(4, util.UInt32ToBytes(bodyLen), writer)
+//		if err != nil {
+//			return err
+//		}
+//		err = checkWrite(int(nameLen), nameBuf, writer)
+//		if err != nil {
+//			return err
+//		}
+//		err = checkWrite(int(bodyLen), body, writer)
+//		if err != nil {
+//			return err
+//		}
+//	}
+//	return nil
+//}
+//
+//func checkWrite(len int, buf []byte, w *bufio.Writer) error {
+//
+//	rl, err := w.Write(buf)
+//	if err != nil {
+//		return err
+//	}
+//	if rl != len {
+//		return errors.New("The length of the write data does not match the calculated\n")
+//	}
+//	return nil
+//}

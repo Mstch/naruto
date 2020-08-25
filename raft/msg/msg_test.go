@@ -1,26 +1,51 @@
 package msg
 
 import (
-	"net"
-	"net/rpc"
+	"encoding/json"
 	"testing"
 )
 
-func Test(t *testing.T) {
+func BenchmarkMarshalProto(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = (&AppendReq{
+			Id:           uint32(i),
+			Term:         uint32(i),
+			PrevLogIndex: uint64(i),
+			PrevLogTerm:  uint32(i),
+			LeaderCommit: uint64(i),
+			Logs: []*Log{{
+				Term:  uint32(i),
+				Index: uint64(i),
+				Cmd: &Cmd{
+					Opt:   Get,
+					Key:   "get",
+					Value: "0",
+				},
+			}},
+		}).Marshal()
+	}
 }
 
-type TestCodec struct {
-	Conn net.Conn
+func BenchmarkMarshalJson(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = json.Marshal(&AppendReq{
+			Id:           uint32(i),
+			Term:         uint32(i),
+			PrevLogIndex: uint64(i),
+			PrevLogTerm:  uint32(i),
+			LeaderCommit: uint64(i),
+			Logs: []*Log{{
+				Term:  uint32(i),
+				Index: uint64(i),
+				Cmd: &Cmd{
+					Opt:   Get,
+					Key:   "get",
+					Value: "0",
+				},
+			}},
+		})
+	}
 }
 
-func (t *TestCodec) ReadRequestHeader(request *rpc.Request) error {
-
-}
-
-func (t *TestCodec) ReadRequestBody(i interface{}) error {
-
-}
-
-func (t *TestCodec) WriteResponse(response *rpc.Response, i interface{}) error { panic("implement me") }
-
-func (t *TestCodec) Close() error { panic("implement me") }
