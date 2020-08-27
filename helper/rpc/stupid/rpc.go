@@ -1,6 +1,6 @@
 package stupid
 
-type Rpc struct {
+type RpcImpl struct {
 	ServerImpl
 	ClientImpl
 	MsgFactoryRegister
