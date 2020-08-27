@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	registerInstance     *MsgFactoryRegister
+	registerInstance     *msgFactoryRegister
 	registerInstanceOnce = &sync.Once{}
 )
 
@@ -15,20 +15,20 @@ type factory struct {
 	pool    *sync.Pool
 }
 
-type MsgFactoryRegister struct {
+type msgFactoryRegister struct {
 	factoryMap map[uint8]*factory
 }
 
-func DefaultRegisterInstance() *MsgFactoryRegister {
+func DefaultRegisterInstance() *msgFactoryRegister {
 	registerInstanceOnce.Do(func() {
-		registerInstance = &MsgFactoryRegister{
+		registerInstance = &msgFactoryRegister{
 			factoryMap: make(map[uint8]*factory, 8),
 		}
 	})
 	return registerInstance
 }
 
-func (m *MsgFactoryRegister) RegMessageFactory(id uint8, usePool bool, f func() proto.Message) {
+func (m *msgFactoryRegister) RegMessageFactory(id uint8, usePool bool, f func() proto.Message) {
 	m.factoryMap[id] = &factory{
 		produce: f,
 	}

@@ -21,24 +21,25 @@ func serveConn(handlers map[string]*handler, conn net.Conn) {
 			break
 		}
 		go func(name string, msgBody []byte) {
-			handler := handlers[name]
-			factory := DefaultRegisterInstance().factoryMap[handler.argId]
-			var arg proto.Message
-			if factory.pool != nil {
-				arg = factory.pool.Get().(proto.Message)
-			} else {
-				arg = factory.produce()
-			}
-			err := proto.Unmarshal(msgBody, arg)
-			if err != nil {
-				logger.Error("Unmarshal failed:%s", err)
-				return
-			}
-			resPb := handlers[name].handleFunc(arg)
-			if resPb != nil {
-				err = write(conn, name, resPb)
+			if handler, ok := handlers[name]; ok {
+				factory := DefaultRegisterInstance().factoryMap[handler.argId]
+				var arg proto.Message
+				if factory.pool != nil {
+					arg = factory.pool.Get().(proto.Message)
+				} else {
+					arg = factory.produce()
+				}
+				err := proto.Unmarshal(msgBody, arg)
 				if err != nil {
-					logger.Error("error when response :%s", err)
+					logger.Error("Unmarshal failed:%s", err)
+					return
+				}
+				resPb := handlers[name].handleFunc(arg)
+				if resPb != nil {
+					err = write(conn, name, resPb)
+					if err != nil {
+						logger.Error("error when response :%s", err)
+					}
 				}
 			}
 		}(name, msgBody)
