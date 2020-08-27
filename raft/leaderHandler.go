@@ -2,32 +2,32 @@ package raft
 
 import "github.com/Mstch/naruto/raft/msg"
 
-type followerHandler struct{}
+type leaderHandler struct{}
 
-func newFollowerHandler() *followerHandler {
-	return &followerHandler{}
+func newLeaderHandler() *leaderHandler {
+	return &leaderHandler{}
 }
 
-func (f *followerHandler) onVoteReq(req msg.VoteReq) {
+func (f *leaderHandler) onVoteReq(req msg.VoteReq) {
 	panic("implement me")
 }
 
-func (f *followerHandler) onVoteResp(req msg.VoteResp) {
+func (f *leaderHandler) onVoteResp(req msg.VoteResp) {
 	panic("implement me")
 }
 
-func (f *followerHandler) onHeartbeatReq(req msg.VoteReq) {
+func (f *leaderHandler) onHeartbeatReq(req msg.VoteReq) {
 	panic("implement me")
 }
 
-func (f *followerHandler) onHeartbeatResp(req msg.VoteReq) {
+func (f *leaderHandler) onHeartbeatResp(req msg.VoteReq) {
 	panic("implement me")
 }
 
-func (f *followerHandler) onAppendReq(req msg.VoteReq) {
+func (f *leaderHandler) onAppendReq(req msg.VoteReq) {
 	panic("implement me")
 }
 
-func (f *followerHandler) onAppendResp(req msg.VoteReq) {
+func (f *leaderHandler) onAppendResp(req msg.VoteReq) {
 	panic("implement me")
 }

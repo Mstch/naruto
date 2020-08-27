@@ -40,7 +40,7 @@ func BenchmarkMarshalJson(b *testing.B) {
 				Term:  uint32(i),
 				Index: uint64(i),
 				Cmd: &Cmd{
-					Opt:   Get,
+					Opt:   Set,
 					Key:   "get",
 					Value: "0",
 				},
@@ -48,4 +48,3 @@ func BenchmarkMarshalJson(b *testing.B) {
 		})
 	}
 }
-

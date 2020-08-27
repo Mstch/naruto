@@ -7,12 +7,11 @@ import (
 )
 
 type rule = uint32
-type ruleSet = map[rule]struct{}
 
 const (
-	follower  rule = 0x001
-	candidate      = 0x010
-	leader         = 0x100
+	follower rule = iota
+	candidate
+	leader
 )
 
 var key = []byte("node-state")
@@ -39,15 +38,6 @@ func loadFromDB() {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func changeRule(should ruleSet, new rule) error {
-	ruleLock.Lock()
-	if _, ok := should[nodeRule]; ok {
-		nodeRule = new
-	}
-	ruleLock.Unlock()
-	return nil
 }
 
 func becomeCandidate() {

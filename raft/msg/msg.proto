@@ -8,21 +8,6 @@ message VoteReq {
     uint32 lastLogTerm = 4;
 }
 
-message Cmd {
-    enum Opt {
-        Get = 0;
-        Set = 1;
-    }
-    Opt opt = 1;
-    string key = 2;
-    string value = 3;
-}
-
-message Log {
-    uint32 term = 2;
-    uint64 index = 3;
-    Cmd cmd = 1;
-}
 
 message AppendReq {
     uint32 id = 1;
@@ -36,7 +21,24 @@ message AppendReq {
 message HeartbeatReq {
     uint32 id = 1;
     uint32 term = 2;
-    uint64 leaderCommit = 5;
+    uint64 leaderCommit = 3;
+}
+
+
+message Cmd {
+    enum Opt {
+        Get = 0;
+        Set = 1;
+    }
+    Opt opt = 1;
+    string key = 2;
+    string value = 3;
+}
+
+message Log {
+    Cmd cmd = 1;
+    uint32 term = 2;
+    uint64 index = 3;
 }
 
 

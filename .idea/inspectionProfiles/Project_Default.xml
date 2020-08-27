@@ -17,7 +17,11 @@
         <method importPath="net" receiver="PacketConn" name="Close" />
         <method importPath="go.uber.org/zap" receiver="*Logger" name="Sync" />
         <method importPath="github.com/cockroachdb/pebble" receiver="*DB" name="Set" />
+        <method importPath="github.com/gogo/protobuf/io" receiver="ReadCloser" name="Close" />
       </methods>
+    </inspection_tool>
+    <inspection_tool class="ShellCheck" enabled="true" level="ERROR" enabled_by_default="true">
+      <shellcheck_settings value="SC2086" />
     </inspection_tool>
   </profile>
 </component>

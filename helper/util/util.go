@@ -22,5 +22,6 @@ func BytesToUInt32(data []byte) uint32 {
 }
 
 func BytesToInt32(data []byte) int32 {
-	return int32(BytesToInt32(data))
+	return int32(BytesToUInt32(data))
 }
+

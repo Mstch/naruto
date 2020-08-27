@@ -26,3 +26,9 @@ type Client interface {
 type MessageFactoryRegister interface {
 	RegMessageFactory(id uint8, usePool bool, factory func() proto.Message)
 }
+
+type Rpc interface {
+	Server
+	Client
+	MessageFactoryRegister
+}
