@@ -4,30 +4,35 @@ import "github.com/Mstch/naruto/raft/msg"
 
 type candidateHandler struct{}
 
-func newCandidateHandler() *candidateHandler {
-	return &candidateHandler{}
-}
 
-func (f *candidateHandler) onVoteReq(req msg.VoteReq) {
+func (f *candidateHandler) onElection() {
 	panic("implement me")
 }
 
-func (f *candidateHandler) onVoteResp(req msg.VoteResp) {
+func (f *candidateHandler) onHeartbeat() {
 	panic("implement me")
 }
 
-func (f *candidateHandler) onHeartbeatReq(req msg.VoteReq) {
+func (f *candidateHandler) onVoteReq(arg *msg.VoteReq) *msg.VoteResp {
 	panic("implement me")
 }
 
-func (f *candidateHandler) onHeartbeatResp(req msg.VoteReq) {
+func (f *candidateHandler) onVoteResp(arg *msg.VoteResp) {
 	panic("implement me")
 }
 
-func (f *candidateHandler) onAppendReq(req msg.VoteReq) {
+func (f *candidateHandler) onHeartbeatReq(arg *msg.HeartbeatReq) *msg.HeartbeatResp {
 	panic("implement me")
 }
 
-func (f *candidateHandler) onAppendResp(req msg.VoteReq) {
+func (f *candidateHandler) onHeartbeatResp(arg *msg.HeartbeatResp) {
+	panic("implement me")
+}
+
+func (f *candidateHandler) onAppendReq(arg *msg.AppendReq) *msg.AppendResp {
+	panic("implement me")
+}
+
+func (f *candidateHandler) onAppendResp(arg *msg.AppendResp) {
 	panic("implement me")
 }

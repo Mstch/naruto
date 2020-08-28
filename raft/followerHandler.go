@@ -1,33 +1,40 @@
 package raft
 
-import "github.com/Mstch/naruto/raft/msg"
+import (
+	"github.com/Mstch/naruto/raft/msg"
+)
 
-type followerHandler struct{}
+type followerHandler struct{
 
-func newFollowerHandler() *followerHandler {
-	return &followerHandler{}
 }
 
-func (f *followerHandler) onVoteReq(req msg.VoteReq) {
+func (f *followerHandler) onElection() {
 	panic("implement me")
 }
 
-func (f *followerHandler) onVoteResp(req msg.VoteResp) {
+func (f *followerHandler) onHeartbeat() {}
+
+func (f *followerHandler) onVoteReq(arg *msg.VoteReq) *msg.VoteResp {
 	panic("implement me")
 }
 
-func (f *followerHandler) onHeartbeatReq(req msg.VoteReq) {
+func (f *followerHandler) onVoteResp(arg *msg.VoteResp) {
 	panic("implement me")
 }
 
-func (f *followerHandler) onHeartbeatResp(req msg.VoteReq) {
+func (f *followerHandler) onHeartbeatReq(arg *msg.HeartbeatReq) *msg.HeartbeatResp {
 	panic("implement me")
 }
 
-func (f *followerHandler) onAppendReq(req msg.VoteReq) {
+func (f *followerHandler) onHeartbeatResp(arg *msg.HeartbeatResp) {
 	panic("implement me")
 }
 
-func (f *followerHandler) onAppendResp(req msg.VoteReq) {
+func (f *followerHandler) onAppendReq(arg *msg.AppendReq) *msg.AppendResp {
 	panic("implement me")
 }
+
+func (f *followerHandler) onAppendResp(arg *msg.AppendResp) {
+	panic("implement me")
+}
+
