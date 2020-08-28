@@ -17,12 +17,12 @@ const (
 )
 
 type rpcHandler interface {
-	onVoteReq(req msg.VoteReq)
+	onVoteReq(req msg.VoteReq) msg.VoteResp
 	onVoteResp(req msg.VoteResp)
-	onHeartbeatReq(req msg.VoteReq)
-	onHeartbeatResp(req msg.VoteReq)
-	onAppendReq(req msg.VoteReq)
-	onAppendResp(req msg.VoteReq)
+	onHeartbeatReq(req msg.HeartbeatReq) msg.HeartbeatResp
+	onHeartbeatResp(req msg.HeartbeatResp)
+	onAppendReq(req msg.AppendReq) msg.AppendResp
+	onAppendResp(req msg.AppendResp)
 }
 type timeoutHandler interface {
 	onElection()
@@ -50,14 +50,21 @@ func regProtoMsg(register rpc.MessageFactoryRegister) {
 	})
 }
 func regHandlers(server rpc.Server) {
-	ruleDict := [3]rpcHandler{}
-	ruleDict[follower] = newFollowerHandler()
-	ruleDict[candidate] = newCandidateHandler()
-	ruleDict[leader] = newLeaderHandler()
+	f := &followerHandler{}
+	c := &candidateHandler{}
+	l := &leaderHandler{}
+	dict := [3]map[string]func(req proto.Message) proto.Message{}
+	dict[follower]["voteReq"] = f.onVoteReq
+	dict[follower]["voteReq"] = f.onVoteReq
+	dict[follower]["voteReq"] = f.onVoteReq
+	dict[follower]["voteReq"] = f.onVoteReq
+	server.RegHandler("voteReq", func(arg proto.Message) (res proto.Message) {
+
+	}, voteReq, voteResp)
 }
 func handle() {
 	server := stupid.DefaultServerInstance()
 	register := stupid.DefaultRegisterInstance()
 	regProtoMsg(register)
+	regHandlers(server)
 }
-
