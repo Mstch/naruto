@@ -1,7 +1,9 @@
 package raft
 
 import (
+	"github.com/Mstch/naruto/conf"
 	"github.com/Mstch/naruto/helper/logger"
+	"github.com/Mstch/naruto/helper/member"
 	"github.com/Mstch/naruto/helper/rpc"
 	"github.com/Mstch/naruto/helper/rpc/stupid"
 	"github.com/Mstch/naruto/raft/msg"
@@ -19,43 +21,43 @@ const (
 )
 
 var (
+	fh                = &followerHandler{}
+	ch                = &candidateHandler{}
+	lh                = &leaderHandler{}
 	serverHandlerDict = [3]map[string]func(req proto.Message) proto.Message{}
 	clientHandlerDict = [3]map[string]func(req proto.Message){}
 )
 
 func init() {
-	f := &followerHandler{}
-	c := &candidateHandler{}
-	l := &leaderHandler{}
 	serverHandlerDict[follower] = make(map[string]func(req proto.Message) proto.Message, 3)
 	serverHandlerDict[candidate] = make(map[string]func(req proto.Message) proto.Message, 2)
 	serverHandlerDict[leader] = make(map[string]func(req proto.Message) proto.Message, 0)
 	serverHandlerDict[follower]["Vote"] = func(req proto.Message) proto.Message {
-		return f.onVoteReq(req.(*msg.VoteReq))
+		return fh.onVoteReq(req.(*msg.VoteReq))
 	}
 	serverHandlerDict[follower]["Heartbeat"] = func(req proto.Message) proto.Message {
-		return f.onHeartbeatReq(req.(*msg.HeartbeatReq))
+		return fh.onHeartbeatReq(req.(*msg.HeartbeatReq))
 	}
 	serverHandlerDict[follower]["Append"] = func(req proto.Message) proto.Message {
-		return f.onAppendReq(req.(*msg.AppendReq))
+		return fh.onAppendReq(req.(*msg.AppendReq))
 	}
 	serverHandlerDict[candidate]["Heartbeat"] = func(req proto.Message) proto.Message {
-		return c.onHeartbeatReq(req.(*msg.HeartbeatReq))
+		return ch.onHeartbeatReq(req.(*msg.HeartbeatReq))
 	}
 	serverHandlerDict[candidate]["Append"] = func(req proto.Message) proto.Message {
-		return c.onAppendReq(req.(*msg.AppendReq))
+		return ch.onAppendReq(req.(*msg.AppendReq))
 	}
 	clientHandlerDict[follower] = make(map[string]func(req proto.Message), 0)
 	clientHandlerDict[candidate] = make(map[string]func(req proto.Message), 1)
 	clientHandlerDict[leader] = make(map[string]func(req proto.Message), 2)
 	clientHandlerDict[candidate]["Vote"] = func(resp proto.Message) {
-		c.onVoteResp(resp.(*msg.VoteResp))
+		ch.onVoteResp(resp.(*msg.VoteResp))
 	}
 	clientHandlerDict[leader]["Heartbeat"] = func(resp proto.Message) {
-		l.onHeartbeatResp(resp.(*msg.HeartbeatResp))
+		lh.onHeartbeatResp(resp.(*msg.HeartbeatResp))
 	}
 	clientHandlerDict[leader]["Append"] = func(resp proto.Message) {
-		l.onAppendResp(resp.(*msg.AppendResp))
+		lh.onAppendResp(resp.(*msg.AppendResp))
 	}
 }
 
@@ -137,54 +139,22 @@ func regServerHandlers(server rpc.Server) {
 	}
 }
 
-func regClientHandlers(client rpc.Client) {
-	err := client.RegHandler("Vote", func(arg proto.Message) {
-		if termInterceptor(arg.(*msg.VoteReq).Term) {
-			r := atomic.LoadUint32(&nodeRule)
-			if h, ok := clientHandlerDict[r]["Vote"]; ok {
-				h(arg)
-			}
-		}
-	}, voteReq)
-	if err != nil {
-		panic(err)
-	}
-	err = client.RegHandler("Heartbeat", func(arg proto.Message) {
-		if termInterceptor(arg.(*msg.HeartbeatReq).Term) {
-			r := atomic.LoadUint32(&nodeRule)
-			if h, ok := clientHandlerDict[r]["Heartbeat"]; ok {
-				h(arg)
-			}
-		}
-	}, heartbeatReq)
-	if err != nil {
-		panic(err)
-	}
-	err = client.RegHandler("Append", func(arg proto.Message) {
-		if termInterceptor(arg.(*msg.AppendReq).Term) {
-			r := atomic.LoadUint32(&nodeRule)
-			if h, ok := clientHandlerDict[r]["Append"]; ok {
-				h(arg)
-			}
-		}
-	}, appendReq)
-}
-
-func startup(clients []rpc.Client) {
+func StartupServer() {
 	server := stupid.DefaultServerInstance()
 	register := stupid.DefaultRegisterInstance()
 	regProtoMsg(register)
 	regServerHandlers(server)
-	for _, client := range clients {
-		regClientHandlers(client)
+	err := server.Listen(conf.Conf.Address)
+	if err != nil {
+		panic(err)
 	}
+	member.Startup()
 }
 
 func termInterceptor(term uint32) bool {
 	selfTerm := atomic.LoadUint32(&nodeTerm)
 	if term > selfTerm {
 		atomic.StoreUint32(&nodeTerm, term)
-		becomeFollower()
 		return true
 	} else if term < selfTerm {
 		return false
@@ -201,3 +171,4 @@ func commitIndexInterceptor(commitIndex uint64) {
 		}
 	}
 }
+

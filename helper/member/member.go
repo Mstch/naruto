@@ -20,7 +20,7 @@ type Member struct {
 
 var (
 	ConnectedMembers map[string]*Member
-	OK               = make(chan bool)
+	ok               = make(chan bool)
 	discoverTicker   = time.NewTicker(time.Second * 1)
 	cLock            sync.Mutex
 	self             *Member
@@ -51,9 +51,10 @@ func Startup() {
 	discoverCounter = make(map[string]int, config.LaunchSize)
 	go handleDiscovery()
 	go hereIam()
+	<-ok
 }
 
 func Stale() {
 	discoverTicker.Stop()
-	OK <- true
+	ok <- true
 }

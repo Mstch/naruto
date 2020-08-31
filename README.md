@@ -31,6 +31,8 @@
 │   │   ├── msg.proto
 │   └── raft.go--------------启动器            
 └── startup.sh---------------docker测试启动器
-
-
 ```
+
+有状态startup有依赖的顺序:
+member->server
+statDB->timer

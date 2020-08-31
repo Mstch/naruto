@@ -43,14 +43,16 @@ var Cmd_Opt_value = map[string]int32{
 }
 
 func (Cmd_Opt) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_c06e4cca6c2cc899, []int{1, 0}
+	return fileDescriptor_c06e4cca6c2cc899, []int{3, 0}
 }
 
 type VoteReq struct {
-	Id           uint32 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Term         uint32 `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
-	LastLogIndex uint64 `protobuf:"varint,3,opt,name=lastLogIndex,proto3" json:"lastLogIndex,omitempty"`
-	LastLogTerm  uint32 `protobuf:"varint,4,opt,name=lastLogTerm,proto3" json:"lastLogTerm,omitempty"`
+	Id uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	//来自哪个节点
+	From         uint32 `protobuf:"varint,2,opt,name=from,proto3" json:"from,omitempty"`
+	Term         uint32 `protobuf:"varint,3,opt,name=term,proto3" json:"term,omitempty"`
+	LastLogIndex uint64 `protobuf:"varint,4,opt,name=lastLogIndex,proto3" json:"lastLogIndex,omitempty"`
+	LastLogTerm  uint32 `protobuf:"varint,5,opt,name=lastLogTerm,proto3" json:"lastLogTerm,omitempty"`
 }
 
 func (m *VoteReq) Reset()      { *m = VoteReq{} }
@@ -85,9 +87,16 @@ func (m *VoteReq) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_VoteReq proto.InternalMessageInfo
 
-func (m *VoteReq) GetId() uint32 {
+func (m *VoteReq) GetId() uint64 {
 	if m != nil {
 		return m.Id
+	}
+	return 0
+}
+
+func (m *VoteReq) GetFrom() uint32 {
+	if m != nil {
+		return m.From
 	}
 	return 0
 }
@@ -113,6 +122,150 @@ func (m *VoteReq) GetLastLogTerm() uint32 {
 	return 0
 }
 
+type AppendReq struct {
+	//序列号,非论文中的id
+	Id uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	//来自哪个节点
+	From         uint32 `protobuf:"varint,2,opt,name=from,proto3" json:"from,omitempty"`
+	Term         uint32 `protobuf:"varint,3,opt,name=term,proto3" json:"term,omitempty"`
+	PrevLogIndex uint64 `protobuf:"varint,4,opt,name=prevLogIndex,proto3" json:"prevLogIndex,omitempty"`
+	PrevLogTerm  uint32 `protobuf:"varint,5,opt,name=prevLogTerm,proto3" json:"prevLogTerm,omitempty"`
+	LeaderCommit uint64 `protobuf:"varint,6,opt,name=leaderCommit,proto3" json:"leaderCommit,omitempty"`
+	Logs         []*Log `protobuf:"bytes,7,rep,name=logs,proto3" json:"logs,omitempty"`
+}
+
+func (m *AppendReq) Reset()      { *m = AppendReq{} }
+func (*AppendReq) ProtoMessage() {}
+func (*AppendReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c06e4cca6c2cc899, []int{1}
+}
+func (m *AppendReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *AppendReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_AppendReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *AppendReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AppendReq.Merge(m, src)
+}
+func (m *AppendReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *AppendReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_AppendReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AppendReq proto.InternalMessageInfo
+
+func (m *AppendReq) GetId() uint64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+func (m *AppendReq) GetFrom() uint32 {
+	if m != nil {
+		return m.From
+	}
+	return 0
+}
+
+func (m *AppendReq) GetTerm() uint32 {
+	if m != nil {
+		return m.Term
+	}
+	return 0
+}
+
+func (m *AppendReq) GetPrevLogIndex() uint64 {
+	if m != nil {
+		return m.PrevLogIndex
+	}
+	return 0
+}
+
+func (m *AppendReq) GetPrevLogTerm() uint32 {
+	if m != nil {
+		return m.PrevLogTerm
+	}
+	return 0
+}
+
+func (m *AppendReq) GetLeaderCommit() uint64 {
+	if m != nil {
+		return m.LeaderCommit
+	}
+	return 0
+}
+
+func (m *AppendReq) GetLogs() []*Log {
+	if m != nil {
+		return m.Logs
+	}
+	return nil
+}
+
+type HeartbeatReq struct {
+	Term         uint32 `protobuf:"varint,1,opt,name=term,proto3" json:"term,omitempty"`
+	LeaderCommit uint64 `protobuf:"varint,2,opt,name=leaderCommit,proto3" json:"leaderCommit,omitempty"`
+}
+
+func (m *HeartbeatReq) Reset()      { *m = HeartbeatReq{} }
+func (*HeartbeatReq) ProtoMessage() {}
+func (*HeartbeatReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c06e4cca6c2cc899, []int{2}
+}
+func (m *HeartbeatReq) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *HeartbeatReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_HeartbeatReq.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *HeartbeatReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HeartbeatReq.Merge(m, src)
+}
+func (m *HeartbeatReq) XXX_Size() int {
+	return m.Size()
+}
+func (m *HeartbeatReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_HeartbeatReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HeartbeatReq proto.InternalMessageInfo
+
+func (m *HeartbeatReq) GetTerm() uint32 {
+	if m != nil {
+		return m.Term
+	}
+	return 0
+}
+
+func (m *HeartbeatReq) GetLeaderCommit() uint64 {
+	if m != nil {
+		return m.LeaderCommit
+	}
+	return 0
+}
+
 type Cmd struct {
 	Opt   Cmd_Opt `protobuf:"varint,1,opt,name=opt,proto3,enum=Cmd_Opt" json:"opt,omitempty"`
 	Key   string  `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
@@ -122,7 +275,7 @@ type Cmd struct {
 func (m *Cmd) Reset()      { *m = Cmd{} }
 func (*Cmd) ProtoMessage() {}
 func (*Cmd) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c06e4cca6c2cc899, []int{1}
+	return fileDescriptor_c06e4cca6c2cc899, []int{3}
 }
 func (m *Cmd) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -173,15 +326,15 @@ func (m *Cmd) GetValue() string {
 }
 
 type Log struct {
+	Cmd   *Cmd   `protobuf:"bytes,1,opt,name=cmd,proto3" json:"cmd,omitempty"`
 	Term  uint32 `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
 	Index uint64 `protobuf:"varint,3,opt,name=index,proto3" json:"index,omitempty"`
-	Cmd   *Cmd   `protobuf:"bytes,1,opt,name=cmd,proto3" json:"cmd,omitempty"`
 }
 
 func (m *Log) Reset()      { *m = Log{} }
 func (*Log) ProtoMessage() {}
 func (*Log) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c06e4cca6c2cc899, []int{2}
+	return fileDescriptor_c06e4cca6c2cc899, []int{4}
 }
 func (m *Log) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -210,6 +363,13 @@ func (m *Log) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Log proto.InternalMessageInfo
 
+func (m *Log) GetCmd() *Cmd {
+	if m != nil {
+		return m.Cmd
+	}
+	return nil
+}
+
 func (m *Log) GetTerm() uint32 {
 	if m != nil {
 		return m.Term
@@ -224,158 +384,10 @@ func (m *Log) GetIndex() uint64 {
 	return 0
 }
 
-func (m *Log) GetCmd() *Cmd {
-	if m != nil {
-		return m.Cmd
-	}
-	return nil
-}
-
-type AppendReq struct {
-	Id           uint32 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Term         uint32 `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
-	PrevLogIndex uint64 `protobuf:"varint,3,opt,name=prevLogIndex,proto3" json:"prevLogIndex,omitempty"`
-	PrevLogTerm  uint32 `protobuf:"varint,4,opt,name=prevLogTerm,proto3" json:"prevLogTerm,omitempty"`
-	LeaderCommit uint64 `protobuf:"varint,5,opt,name=leaderCommit,proto3" json:"leaderCommit,omitempty"`
-	Logs         []*Log `protobuf:"bytes,6,rep,name=logs,proto3" json:"logs,omitempty"`
-}
-
-func (m *AppendReq) Reset()      { *m = AppendReq{} }
-func (*AppendReq) ProtoMessage() {}
-func (*AppendReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c06e4cca6c2cc899, []int{3}
-}
-func (m *AppendReq) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *AppendReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_AppendReq.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *AppendReq) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AppendReq.Merge(m, src)
-}
-func (m *AppendReq) XXX_Size() int {
-	return m.Size()
-}
-func (m *AppendReq) XXX_DiscardUnknown() {
-	xxx_messageInfo_AppendReq.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_AppendReq proto.InternalMessageInfo
-
-func (m *AppendReq) GetId() uint32 {
-	if m != nil {
-		return m.Id
-	}
-	return 0
-}
-
-func (m *AppendReq) GetTerm() uint32 {
-	if m != nil {
-		return m.Term
-	}
-	return 0
-}
-
-func (m *AppendReq) GetPrevLogIndex() uint64 {
-	if m != nil {
-		return m.PrevLogIndex
-	}
-	return 0
-}
-
-func (m *AppendReq) GetPrevLogTerm() uint32 {
-	if m != nil {
-		return m.PrevLogTerm
-	}
-	return 0
-}
-
-func (m *AppendReq) GetLeaderCommit() uint64 {
-	if m != nil {
-		return m.LeaderCommit
-	}
-	return 0
-}
-
-func (m *AppendReq) GetLogs() []*Log {
-	if m != nil {
-		return m.Logs
-	}
-	return nil
-}
-
-type HeartbeatReq struct {
-	Id           uint32 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Term         uint32 `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
-	LeaderCommit uint64 `protobuf:"varint,5,opt,name=leaderCommit,proto3" json:"leaderCommit,omitempty"`
-}
-
-func (m *HeartbeatReq) Reset()      { *m = HeartbeatReq{} }
-func (*HeartbeatReq) ProtoMessage() {}
-func (*HeartbeatReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c06e4cca6c2cc899, []int{4}
-}
-func (m *HeartbeatReq) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *HeartbeatReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_HeartbeatReq.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *HeartbeatReq) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HeartbeatReq.Merge(m, src)
-}
-func (m *HeartbeatReq) XXX_Size() int {
-	return m.Size()
-}
-func (m *HeartbeatReq) XXX_DiscardUnknown() {
-	xxx_messageInfo_HeartbeatReq.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_HeartbeatReq proto.InternalMessageInfo
-
-func (m *HeartbeatReq) GetId() uint32 {
-	if m != nil {
-		return m.Id
-	}
-	return 0
-}
-
-func (m *HeartbeatReq) GetTerm() uint32 {
-	if m != nil {
-		return m.Term
-	}
-	return 0
-}
-
-func (m *HeartbeatReq) GetLeaderCommit() uint64 {
-	if m != nil {
-		return m.LeaderCommit
-	}
-	return 0
-}
-
 type VoteResp struct {
-	Term  uint32 `protobuf:"varint,1,opt,name=term,proto3" json:"term,omitempty"`
-	Grant bool   `protobuf:"varint,2,opt,name=grant,proto3" json:"grant,omitempty"`
+	Id    uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Term  uint32 `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
+	Grant bool   `protobuf:"varint,3,opt,name=grant,proto3" json:"grant,omitempty"`
 }
 
 func (m *VoteResp) Reset()      { *m = VoteResp{} }
@@ -410,6 +422,13 @@ func (m *VoteResp) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_VoteResp proto.InternalMessageInfo
 
+func (m *VoteResp) GetId() uint64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
 func (m *VoteResp) GetTerm() uint32 {
 	if m != nil {
 		return m.Term
@@ -425,9 +444,10 @@ func (m *VoteResp) GetGrant() bool {
 }
 
 type AppendResp struct {
-	Term         uint32 `protobuf:"varint,1,opt,name=term,proto3" json:"term,omitempty"`
-	Success      bool   `protobuf:"varint,2,opt,name=success,proto3" json:"success,omitempty"`
-	LastLogIndex uint64 `protobuf:"varint,3,opt,name=lastLogIndex,proto3" json:"lastLogIndex,omitempty"`
+	Id           uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Term         uint32 `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
+	Success      bool   `protobuf:"varint,3,opt,name=success,proto3" json:"success,omitempty"`
+	LastLogIndex uint64 `protobuf:"varint,4,opt,name=lastLogIndex,proto3" json:"lastLogIndex,omitempty"`
 }
 
 func (m *AppendResp) Reset()      { *m = AppendResp{} }
@@ -461,6 +481,13 @@ func (m *AppendResp) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_AppendResp proto.InternalMessageInfo
+
+func (m *AppendResp) GetId() uint64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
 
 func (m *AppendResp) GetTerm() uint32 {
 	if m != nil {
@@ -545,10 +572,10 @@ func (m *HeartbeatResp) GetLastLogIndex() uint64 {
 func init() {
 	proto.RegisterEnum("Cmd_Opt", Cmd_Opt_name, Cmd_Opt_value)
 	proto.RegisterType((*VoteReq)(nil), "VoteReq")
-	proto.RegisterType((*Cmd)(nil), "Cmd")
-	proto.RegisterType((*Log)(nil), "Log")
 	proto.RegisterType((*AppendReq)(nil), "AppendReq")
 	proto.RegisterType((*HeartbeatReq)(nil), "HeartbeatReq")
+	proto.RegisterType((*Cmd)(nil), "Cmd")
+	proto.RegisterType((*Log)(nil), "Log")
 	proto.RegisterType((*VoteResp)(nil), "VoteResp")
 	proto.RegisterType((*AppendResp)(nil), "AppendResp")
 	proto.RegisterType((*HeartbeatResp)(nil), "HeartbeatResp")
@@ -557,34 +584,36 @@ func init() {
 func init() { proto.RegisterFile("msg.proto", fileDescriptor_c06e4cca6c2cc899) }
 
 var fileDescriptor_c06e4cca6c2cc899 = []byte{
-	// 419 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x93, 0xc1, 0xae, 0xd2, 0x40,
-	0x14, 0x86, 0x3b, 0x4c, 0xb9, 0xd0, 0x73, 0x2f, 0x84, 0x4c, 0x88, 0x36, 0x2e, 0x26, 0xcd, 0xac,
-	0x58, 0xb1, 0x40, 0x5e, 0x40, 0x59, 0xa0, 0x09, 0x09, 0xc9, 0x68, 0x58, 0x9a, 0x14, 0x3a, 0x69,
-	0x1a, 0x29, 0x33, 0x76, 0x06, 0xa2, 0x3b, 0x1f, 0xc1, 0xc7, 0x70, 0xef, 0x4b, 0xb8, 0x64, 0xc9,
-	0x52, 0xca, 0xc6, 0x25, 0x8f, 0x60, 0x3a, 0x2d, 0xa6, 0x18, 0x8d, 0xb2, 0x70, 0x77, 0xfe, 0x2f,
-	0x39, 0xf3, 0x9f, 0xf3, 0xf7, 0x14, 0xbc, 0x54, 0xc7, 0x43, 0x95, 0x49, 0x23, 0x99, 0x86, 0xd6,
-	0x42, 0x1a, 0xc1, 0xc5, 0x3b, 0xd2, 0x85, 0x46, 0x12, 0xf9, 0x28, 0x40, 0x83, 0x0e, 0x6f, 0x24,
-	0x11, 0x21, 0xe0, 0x1a, 0x91, 0xa5, 0x7e, 0xc3, 0x12, 0x5b, 0x13, 0x06, 0x0f, 0xeb, 0x50, 0x9b,
-	0x99, 0x8c, 0x5f, 0x6e, 0x22, 0xf1, 0xde, 0xc7, 0x01, 0x1a, 0xb8, 0xfc, 0x8a, 0x91, 0x00, 0xee,
-	0x2b, 0xfd, 0xba, 0x68, 0x77, 0x6d, 0x7b, 0x1d, 0xb1, 0x25, 0xe0, 0x49, 0x1a, 0x91, 0x27, 0x80,
-	0xa5, 0x32, 0xd6, 0xb1, 0x3b, 0x6a, 0x0f, 0x27, 0x69, 0x34, 0x9c, 0x2b, 0xc3, 0x0b, 0x48, 0x7a,
-	0x80, 0xdf, 0x8a, 0x0f, 0xd6, 0xdb, 0xe3, 0x45, 0x49, 0xfa, 0xd0, 0xdc, 0x85, 0xeb, 0xad, 0xb0,
-	0x9e, 0x1e, 0x2f, 0x05, 0x7b, 0x0c, 0x78, 0xae, 0x0c, 0x69, 0x01, 0x9e, 0x0a, 0xd3, 0x73, 0x8a,
-	0xe2, 0x95, 0x30, 0x3d, 0xc4, 0xa6, 0x80, 0x67, 0x32, 0xfe, 0xed, 0x12, 0x7d, 0x68, 0x26, 0xb5,
-	0xe9, 0x4b, 0x41, 0x1e, 0x01, 0x5e, 0xa5, 0xe5, 0xfe, 0xf7, 0x23, 0xb7, 0x98, 0x86, 0x17, 0x80,
-	0x7d, 0x41, 0xe0, 0x3d, 0x53, 0x4a, 0x6c, 0xa2, 0x1b, 0x42, 0x52, 0x99, 0xd8, 0xfd, 0x1a, 0x52,
-	0x9d, 0x15, 0x21, 0x55, 0xba, 0x1e, 0x52, 0x0d, 0xd9, 0xa8, 0x45, 0x18, 0x89, 0x6c, 0x22, 0xd3,
-	0x34, 0x31, 0x7e, 0xb3, 0x8a, 0xba, 0xc6, 0x88, 0x0f, 0xee, 0x5a, 0xc6, 0xda, 0xbf, 0x0b, 0xb0,
-	0x1d, 0x7a, 0x26, 0x63, 0x6e, 0x09, 0x5b, 0xc0, 0xc3, 0x0b, 0x11, 0x66, 0x66, 0x29, 0x42, 0x73,
-	0xcb, 0xc7, 0xfd, 0x8b, 0x23, 0x1b, 0x43, 0xbb, 0xbc, 0x17, 0xad, 0x7e, 0xbe, 0x81, 0xae, 0xb3,
-	0x8d, 0xb3, 0x70, 0x63, 0xec, 0xc3, 0x6d, 0x5e, 0x0a, 0xf6, 0x06, 0xe0, 0x12, 0xe1, 0x1f, 0xfa,
-	0x7c, 0x68, 0xe9, 0xed, 0x6a, 0x25, 0xb4, 0xae, 0x3a, 0x2f, 0xf2, 0x5f, 0x4e, 0x8e, 0x85, 0xd0,
-	0xa9, 0x6d, 0xfb, 0x3f, 0x2c, 0x9e, 0x8f, 0xf7, 0x47, 0xea, 0x1c, 0x8e, 0xd4, 0x39, 0x1f, 0x29,
-	0xfa, 0x98, 0x53, 0xf4, 0x39, 0xa7, 0xe8, 0x6b, 0x4e, 0xd1, 0x3e, 0xa7, 0xe8, 0x5b, 0x4e, 0xd1,
-	0xf7, 0x9c, 0x3a, 0xe7, 0x9c, 0xa2, 0x4f, 0x27, 0xea, 0xec, 0x4f, 0xd4, 0x39, 0x9c, 0xa8, 0xb3,
-	0xbc, 0xb3, 0x7f, 0xd9, 0xd3, 0x1f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xb3, 0x6f, 0xcb, 0xfc, 0x72,
-	0x03, 0x00, 0x00,
+	// 453 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x93, 0xbf, 0x8e, 0x13, 0x31,
+	0x10, 0xc6, 0xd7, 0xeb, 0xcd, 0x25, 0x99, 0xfb, 0xa3, 0xc8, 0x3a, 0xc1, 0x8a, 0xc2, 0x8a, 0x5c,
+	0xa5, 0x4a, 0x71, 0xf0, 0x02, 0x10, 0xc4, 0x81, 0x14, 0xe9, 0x24, 0x83, 0xe8, 0x37, 0xb1, 0x59,
+	0x45, 0xc4, 0xb1, 0x59, 0xfb, 0x4e, 0xd0, 0xd1, 0xd1, 0xf2, 0x18, 0xbc, 0x09, 0x94, 0x29, 0xaf,
+	0x24, 0x9b, 0x86, 0xf2, 0x1e, 0x01, 0xd9, 0xbb, 0x41, 0xe6, 0x2e, 0x42, 0x27, 0xd1, 0xcd, 0xf7,
+	0x93, 0x66, 0xe6, 0x9b, 0xf1, 0x18, 0xfa, 0xca, 0x96, 0x63, 0x53, 0x69, 0xa7, 0xd9, 0x17, 0x04,
+	0xdd, 0xb7, 0xda, 0x49, 0x2e, 0x3f, 0x90, 0x13, 0x48, 0x17, 0x22, 0x47, 0x43, 0x34, 0xca, 0x78,
+	0xba, 0x10, 0x84, 0x40, 0xf6, 0xae, 0xd2, 0x2a, 0x4f, 0x87, 0x68, 0x74, 0xcc, 0x43, 0xec, 0x99,
+	0x93, 0x95, 0xca, 0x71, 0xc3, 0x7c, 0x4c, 0x18, 0x1c, 0x2d, 0x0b, 0xeb, 0xa6, 0xba, 0x7c, 0xb5,
+	0x12, 0xf2, 0x63, 0x9e, 0x85, 0x0a, 0x7f, 0x31, 0x32, 0x84, 0xc3, 0x56, 0xbf, 0xf1, 0xe9, 0x9d,
+	0x90, 0x1e, 0x23, 0xf6, 0x1d, 0x41, 0xff, 0xa9, 0x31, 0x72, 0x25, 0xfe, 0xd3, 0x8b, 0xa9, 0xe4,
+	0xd5, 0x6d, 0x2f, 0x31, 0xf3, 0x5e, 0x5a, 0x1d, 0x7b, 0x89, 0x50, 0x98, 0x48, 0x16, 0x42, 0x56,
+	0x13, 0xad, 0xd4, 0xc2, 0xe5, 0x07, 0xed, 0x44, 0x11, 0x23, 0x39, 0x64, 0x4b, 0x5d, 0xda, 0xbc,
+	0x3b, 0xc4, 0xa3, 0xc3, 0xb3, 0x6c, 0x3c, 0xd5, 0x25, 0x0f, 0x84, 0xbd, 0x80, 0xa3, 0x97, 0xb2,
+	0xa8, 0xdc, 0x4c, 0x16, 0xce, 0xcf, 0xb2, 0xf3, 0x89, 0x6e, 0xed, 0x2c, 0xee, 0x90, 0xde, 0xed,
+	0xc0, 0x66, 0x80, 0x27, 0x4a, 0x90, 0x47, 0x80, 0xb5, 0x71, 0x21, 0xfb, 0xe4, 0xac, 0x37, 0x9e,
+	0x28, 0x31, 0xbe, 0x30, 0x8e, 0x7b, 0x48, 0x06, 0x80, 0xdf, 0xcb, 0x4f, 0x21, 0xbb, 0xcf, 0x7d,
+	0x48, 0x4e, 0xa1, 0x73, 0x55, 0x2c, 0x2f, 0x65, 0xd8, 0x4a, 0x9f, 0x37, 0x82, 0x3d, 0x04, 0x7c,
+	0x61, 0x1c, 0xe9, 0x02, 0x3e, 0x97, 0x6e, 0x90, 0xf8, 0xe0, 0xb5, 0x74, 0x03, 0xc4, 0xce, 0x01,
+	0x4f, 0x75, 0x49, 0x1e, 0x00, 0x9e, 0xab, 0x66, 0xdf, 0x7e, 0x96, 0x89, 0x12, 0xdc, 0x83, 0x3f,
+	0xd6, 0xd3, 0xc8, 0xfa, 0x29, 0x74, 0x16, 0x61, 0xb7, 0x38, 0x78, 0x6e, 0x04, 0x7b, 0x0e, 0xbd,
+	0xe6, 0x8e, 0xac, 0xd9, 0xf7, 0x78, 0xfb, 0xaa, 0x94, 0x55, 0xb1, 0x72, 0xa1, 0x4a, 0x8f, 0x37,
+	0x82, 0xad, 0x00, 0x76, 0x37, 0x70, 0xcf, 0x3a, 0x39, 0x74, 0xed, 0xe5, 0x7c, 0x2e, 0xad, 0x6d,
+	0x2b, 0xed, 0xe4, 0x7d, 0xce, 0x92, 0x15, 0x70, 0x1c, 0x3d, 0x95, 0x35, 0x7b, 0xdf, 0x2a, 0x6a,
+	0x91, 0xfe, 0xbb, 0x05, 0xbe, 0xdb, 0xe2, 0xd9, 0x93, 0xf5, 0x86, 0x26, 0xd7, 0x1b, 0x9a, 0xdc,
+	0x6c, 0x28, 0xfa, 0x5c, 0x53, 0xf4, 0xad, 0xa6, 0xe8, 0x47, 0x4d, 0xd1, 0xba, 0xa6, 0xe8, 0x67,
+	0x4d, 0xd1, 0xaf, 0x9a, 0x26, 0x37, 0x35, 0x45, 0x5f, 0xb7, 0x34, 0x59, 0x6f, 0x69, 0x72, 0xbd,
+	0xa5, 0xc9, 0xec, 0x20, 0x7c, 0xcf, 0xc7, 0xbf, 0x03, 0x00, 0x00, 0xff, 0xff, 0xce, 0x7c, 0x48,
+	0xd8, 0xab, 0x03, 0x00, 0x00,
 }
 
 func (x Cmd_Opt) String() string {
@@ -616,6 +645,9 @@ func (this *VoteReq) Equal(that interface{}) bool {
 	if this.Id != that1.Id {
 		return false
 	}
+	if this.From != that1.From {
+		return false
+	}
 	if this.Term != that1.Term {
 		return false
 	}
@@ -623,6 +655,80 @@ func (this *VoteReq) Equal(that interface{}) bool {
 		return false
 	}
 	if this.LastLogTerm != that1.LastLogTerm {
+		return false
+	}
+	return true
+}
+func (this *AppendReq) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*AppendReq)
+	if !ok {
+		that2, ok := that.(AppendReq)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Id != that1.Id {
+		return false
+	}
+	if this.From != that1.From {
+		return false
+	}
+	if this.Term != that1.Term {
+		return false
+	}
+	if this.PrevLogIndex != that1.PrevLogIndex {
+		return false
+	}
+	if this.PrevLogTerm != that1.PrevLogTerm {
+		return false
+	}
+	if this.LeaderCommit != that1.LeaderCommit {
+		return false
+	}
+	if len(this.Logs) != len(that1.Logs) {
+		return false
+	}
+	for i := range this.Logs {
+		if !this.Logs[i].Equal(that1.Logs[i]) {
+			return false
+		}
+	}
+	return true
+}
+func (this *HeartbeatReq) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*HeartbeatReq)
+	if !ok {
+		that2, ok := that.(HeartbeatReq)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Term != that1.Term {
+		return false
+	}
+	if this.LeaderCommit != that1.LeaderCommit {
 		return false
 	}
 	return true
@@ -676,87 +782,13 @@ func (this *Log) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
+	if !this.Cmd.Equal(that1.Cmd) {
+		return false
+	}
 	if this.Term != that1.Term {
 		return false
 	}
 	if this.Index != that1.Index {
-		return false
-	}
-	if !this.Cmd.Equal(that1.Cmd) {
-		return false
-	}
-	return true
-}
-func (this *AppendReq) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*AppendReq)
-	if !ok {
-		that2, ok := that.(AppendReq)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Id != that1.Id {
-		return false
-	}
-	if this.Term != that1.Term {
-		return false
-	}
-	if this.PrevLogIndex != that1.PrevLogIndex {
-		return false
-	}
-	if this.PrevLogTerm != that1.PrevLogTerm {
-		return false
-	}
-	if this.LeaderCommit != that1.LeaderCommit {
-		return false
-	}
-	if len(this.Logs) != len(that1.Logs) {
-		return false
-	}
-	for i := range this.Logs {
-		if !this.Logs[i].Equal(that1.Logs[i]) {
-			return false
-		}
-	}
-	return true
-}
-func (this *HeartbeatReq) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*HeartbeatReq)
-	if !ok {
-		that2, ok := that.(HeartbeatReq)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Id != that1.Id {
-		return false
-	}
-	if this.Term != that1.Term {
-		return false
-	}
-	if this.LeaderCommit != that1.LeaderCommit {
 		return false
 	}
 	return true
@@ -778,6 +810,9 @@ func (this *VoteResp) Equal(that interface{}) bool {
 	if that1 == nil {
 		return this == nil
 	} else if this == nil {
+		return false
+	}
+	if this.Id != that1.Id {
 		return false
 	}
 	if this.Term != that1.Term {
@@ -805,6 +840,9 @@ func (this *AppendResp) Equal(that interface{}) bool {
 	if that1 == nil {
 		return this == nil
 	} else if this == nil {
+		return false
+	}
+	if this.Id != that1.Id {
 		return false
 	}
 	if this.Term != that1.Term {
@@ -852,12 +890,42 @@ func (this *VoteReq) GoString() string {
 	if this == nil {
 		return "nil"
 	}
-	s := make([]string, 0, 8)
+	s := make([]string, 0, 9)
 	s = append(s, "&msg.VoteReq{")
 	s = append(s, "Id: "+fmt.Sprintf("%#v", this.Id)+",\n")
+	s = append(s, "From: "+fmt.Sprintf("%#v", this.From)+",\n")
 	s = append(s, "Term: "+fmt.Sprintf("%#v", this.Term)+",\n")
 	s = append(s, "LastLogIndex: "+fmt.Sprintf("%#v", this.LastLogIndex)+",\n")
 	s = append(s, "LastLogTerm: "+fmt.Sprintf("%#v", this.LastLogTerm)+",\n")
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func (this *AppendReq) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 11)
+	s = append(s, "&msg.AppendReq{")
+	s = append(s, "Id: "+fmt.Sprintf("%#v", this.Id)+",\n")
+	s = append(s, "From: "+fmt.Sprintf("%#v", this.From)+",\n")
+	s = append(s, "Term: "+fmt.Sprintf("%#v", this.Term)+",\n")
+	s = append(s, "PrevLogIndex: "+fmt.Sprintf("%#v", this.PrevLogIndex)+",\n")
+	s = append(s, "PrevLogTerm: "+fmt.Sprintf("%#v", this.PrevLogTerm)+",\n")
+	s = append(s, "LeaderCommit: "+fmt.Sprintf("%#v", this.LeaderCommit)+",\n")
+	if this.Logs != nil {
+		s = append(s, "Logs: "+fmt.Sprintf("%#v", this.Logs)+",\n")
+	}
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func (this *HeartbeatReq) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 6)
+	s = append(s, "&msg.HeartbeatReq{")
+	s = append(s, "Term: "+fmt.Sprintf("%#v", this.Term)+",\n")
+	s = append(s, "LeaderCommit: "+fmt.Sprintf("%#v", this.LeaderCommit)+",\n")
 	s = append(s, "}")
 	return strings.Join(s, "")
 }
@@ -879,40 +947,11 @@ func (this *Log) GoString() string {
 	}
 	s := make([]string, 0, 7)
 	s = append(s, "&msg.Log{")
-	s = append(s, "Term: "+fmt.Sprintf("%#v", this.Term)+",\n")
-	s = append(s, "Index: "+fmt.Sprintf("%#v", this.Index)+",\n")
 	if this.Cmd != nil {
 		s = append(s, "Cmd: "+fmt.Sprintf("%#v", this.Cmd)+",\n")
 	}
-	s = append(s, "}")
-	return strings.Join(s, "")
-}
-func (this *AppendReq) GoString() string {
-	if this == nil {
-		return "nil"
-	}
-	s := make([]string, 0, 10)
-	s = append(s, "&msg.AppendReq{")
-	s = append(s, "Id: "+fmt.Sprintf("%#v", this.Id)+",\n")
 	s = append(s, "Term: "+fmt.Sprintf("%#v", this.Term)+",\n")
-	s = append(s, "PrevLogIndex: "+fmt.Sprintf("%#v", this.PrevLogIndex)+",\n")
-	s = append(s, "PrevLogTerm: "+fmt.Sprintf("%#v", this.PrevLogTerm)+",\n")
-	s = append(s, "LeaderCommit: "+fmt.Sprintf("%#v", this.LeaderCommit)+",\n")
-	if this.Logs != nil {
-		s = append(s, "Logs: "+fmt.Sprintf("%#v", this.Logs)+",\n")
-	}
-	s = append(s, "}")
-	return strings.Join(s, "")
-}
-func (this *HeartbeatReq) GoString() string {
-	if this == nil {
-		return "nil"
-	}
-	s := make([]string, 0, 7)
-	s = append(s, "&msg.HeartbeatReq{")
-	s = append(s, "Id: "+fmt.Sprintf("%#v", this.Id)+",\n")
-	s = append(s, "Term: "+fmt.Sprintf("%#v", this.Term)+",\n")
-	s = append(s, "LeaderCommit: "+fmt.Sprintf("%#v", this.LeaderCommit)+",\n")
+	s = append(s, "Index: "+fmt.Sprintf("%#v", this.Index)+",\n")
 	s = append(s, "}")
 	return strings.Join(s, "")
 }
@@ -920,8 +959,9 @@ func (this *VoteResp) GoString() string {
 	if this == nil {
 		return "nil"
 	}
-	s := make([]string, 0, 6)
+	s := make([]string, 0, 7)
 	s = append(s, "&msg.VoteResp{")
+	s = append(s, "Id: "+fmt.Sprintf("%#v", this.Id)+",\n")
 	s = append(s, "Term: "+fmt.Sprintf("%#v", this.Term)+",\n")
 	s = append(s, "Grant: "+fmt.Sprintf("%#v", this.Grant)+",\n")
 	s = append(s, "}")
@@ -931,8 +971,9 @@ func (this *AppendResp) GoString() string {
 	if this == nil {
 		return "nil"
 	}
-	s := make([]string, 0, 7)
+	s := make([]string, 0, 8)
 	s = append(s, "&msg.AppendResp{")
+	s = append(s, "Id: "+fmt.Sprintf("%#v", this.Id)+",\n")
 	s = append(s, "Term: "+fmt.Sprintf("%#v", this.Term)+",\n")
 	s = append(s, "Success: "+fmt.Sprintf("%#v", this.Success)+",\n")
 	s = append(s, "LastLogIndex: "+fmt.Sprintf("%#v", this.LastLogIndex)+",\n")
@@ -982,20 +1023,125 @@ func (m *VoteReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if m.LastLogTerm != 0 {
 		i = encodeVarintMsg(dAtA, i, uint64(m.LastLogTerm))
 		i--
-		dAtA[i] = 0x20
+		dAtA[i] = 0x28
 	}
 	if m.LastLogIndex != 0 {
 		i = encodeVarintMsg(dAtA, i, uint64(m.LastLogIndex))
 		i--
-		dAtA[i] = 0x18
+		dAtA[i] = 0x20
 	}
 	if m.Term != 0 {
 		i = encodeVarintMsg(dAtA, i, uint64(m.Term))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.From != 0 {
+		i = encodeVarintMsg(dAtA, i, uint64(m.From))
 		i--
 		dAtA[i] = 0x10
 	}
 	if m.Id != 0 {
 		i = encodeVarintMsg(dAtA, i, uint64(m.Id))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *AppendReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *AppendReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *AppendReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Logs) > 0 {
+		for iNdEx := len(m.Logs) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Logs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintMsg(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x3a
+		}
+	}
+	if m.LeaderCommit != 0 {
+		i = encodeVarintMsg(dAtA, i, uint64(m.LeaderCommit))
+		i--
+		dAtA[i] = 0x30
+	}
+	if m.PrevLogTerm != 0 {
+		i = encodeVarintMsg(dAtA, i, uint64(m.PrevLogTerm))
+		i--
+		dAtA[i] = 0x28
+	}
+	if m.PrevLogIndex != 0 {
+		i = encodeVarintMsg(dAtA, i, uint64(m.PrevLogIndex))
+		i--
+		dAtA[i] = 0x20
+	}
+	if m.Term != 0 {
+		i = encodeVarintMsg(dAtA, i, uint64(m.Term))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.From != 0 {
+		i = encodeVarintMsg(dAtA, i, uint64(m.From))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.Id != 0 {
+		i = encodeVarintMsg(dAtA, i, uint64(m.Id))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *HeartbeatReq) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *HeartbeatReq) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *HeartbeatReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.LeaderCommit != 0 {
+		i = encodeVarintMsg(dAtA, i, uint64(m.LeaderCommit))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.Term != 0 {
+		i = encodeVarintMsg(dAtA, i, uint64(m.Term))
 		i--
 		dAtA[i] = 0x8
 	}
@@ -1089,106 +1235,6 @@ func (m *Log) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *AppendReq) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *AppendReq) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *AppendReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Logs) > 0 {
-		for iNdEx := len(m.Logs) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Logs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintMsg(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x32
-		}
-	}
-	if m.LeaderCommit != 0 {
-		i = encodeVarintMsg(dAtA, i, uint64(m.LeaderCommit))
-		i--
-		dAtA[i] = 0x28
-	}
-	if m.PrevLogTerm != 0 {
-		i = encodeVarintMsg(dAtA, i, uint64(m.PrevLogTerm))
-		i--
-		dAtA[i] = 0x20
-	}
-	if m.PrevLogIndex != 0 {
-		i = encodeVarintMsg(dAtA, i, uint64(m.PrevLogIndex))
-		i--
-		dAtA[i] = 0x18
-	}
-	if m.Term != 0 {
-		i = encodeVarintMsg(dAtA, i, uint64(m.Term))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.Id != 0 {
-		i = encodeVarintMsg(dAtA, i, uint64(m.Id))
-		i--
-		dAtA[i] = 0x8
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *HeartbeatReq) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *HeartbeatReq) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *HeartbeatReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.LeaderCommit != 0 {
-		i = encodeVarintMsg(dAtA, i, uint64(m.LeaderCommit))
-		i--
-		dAtA[i] = 0x28
-	}
-	if m.Term != 0 {
-		i = encodeVarintMsg(dAtA, i, uint64(m.Term))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.Id != 0 {
-		i = encodeVarintMsg(dAtA, i, uint64(m.Id))
-		i--
-		dAtA[i] = 0x8
-	}
-	return len(dAtA) - i, nil
-}
-
 func (m *VoteResp) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1217,10 +1263,15 @@ func (m *VoteResp) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0
 		}
 		i--
-		dAtA[i] = 0x10
+		dAtA[i] = 0x18
 	}
 	if m.Term != 0 {
 		i = encodeVarintMsg(dAtA, i, uint64(m.Term))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.Id != 0 {
+		i = encodeVarintMsg(dAtA, i, uint64(m.Id))
 		i--
 		dAtA[i] = 0x8
 	}
@@ -1250,7 +1301,7 @@ func (m *AppendResp) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if m.LastLogIndex != 0 {
 		i = encodeVarintMsg(dAtA, i, uint64(m.LastLogIndex))
 		i--
-		dAtA[i] = 0x18
+		dAtA[i] = 0x20
 	}
 	if m.Success {
 		i--
@@ -1260,10 +1311,15 @@ func (m *AppendResp) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0
 		}
 		i--
-		dAtA[i] = 0x10
+		dAtA[i] = 0x18
 	}
 	if m.Term != 0 {
 		i = encodeVarintMsg(dAtA, i, uint64(m.Term))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.Id != 0 {
+		i = encodeVarintMsg(dAtA, i, uint64(m.Id))
 		i--
 		dAtA[i] = 0x8
 	}
@@ -1333,6 +1389,9 @@ func (m *VoteReq) Size() (n int) {
 	if m.Id != 0 {
 		n += 1 + sovMsg(uint64(m.Id))
 	}
+	if m.From != 0 {
+		n += 1 + sovMsg(uint64(m.From))
+	}
 	if m.Term != 0 {
 		n += 1 + sovMsg(uint64(m.Term))
 	}
@@ -1341,6 +1400,54 @@ func (m *VoteReq) Size() (n int) {
 	}
 	if m.LastLogTerm != 0 {
 		n += 1 + sovMsg(uint64(m.LastLogTerm))
+	}
+	return n
+}
+
+func (m *AppendReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Id != 0 {
+		n += 1 + sovMsg(uint64(m.Id))
+	}
+	if m.From != 0 {
+		n += 1 + sovMsg(uint64(m.From))
+	}
+	if m.Term != 0 {
+		n += 1 + sovMsg(uint64(m.Term))
+	}
+	if m.PrevLogIndex != 0 {
+		n += 1 + sovMsg(uint64(m.PrevLogIndex))
+	}
+	if m.PrevLogTerm != 0 {
+		n += 1 + sovMsg(uint64(m.PrevLogTerm))
+	}
+	if m.LeaderCommit != 0 {
+		n += 1 + sovMsg(uint64(m.LeaderCommit))
+	}
+	if len(m.Logs) > 0 {
+		for _, e := range m.Logs {
+			l = e.Size()
+			n += 1 + l + sovMsg(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *HeartbeatReq) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Term != 0 {
+		n += 1 + sovMsg(uint64(m.Term))
+	}
+	if m.LeaderCommit != 0 {
+		n += 1 + sovMsg(uint64(m.LeaderCommit))
 	}
 	return n
 }
@@ -1384,60 +1491,15 @@ func (m *Log) Size() (n int) {
 	return n
 }
 
-func (m *AppendReq) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Id != 0 {
-		n += 1 + sovMsg(uint64(m.Id))
-	}
-	if m.Term != 0 {
-		n += 1 + sovMsg(uint64(m.Term))
-	}
-	if m.PrevLogIndex != 0 {
-		n += 1 + sovMsg(uint64(m.PrevLogIndex))
-	}
-	if m.PrevLogTerm != 0 {
-		n += 1 + sovMsg(uint64(m.PrevLogTerm))
-	}
-	if m.LeaderCommit != 0 {
-		n += 1 + sovMsg(uint64(m.LeaderCommit))
-	}
-	if len(m.Logs) > 0 {
-		for _, e := range m.Logs {
-			l = e.Size()
-			n += 1 + l + sovMsg(uint64(l))
-		}
-	}
-	return n
-}
-
-func (m *HeartbeatReq) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Id != 0 {
-		n += 1 + sovMsg(uint64(m.Id))
-	}
-	if m.Term != 0 {
-		n += 1 + sovMsg(uint64(m.Term))
-	}
-	if m.LeaderCommit != 0 {
-		n += 1 + sovMsg(uint64(m.LeaderCommit))
-	}
-	return n
-}
-
 func (m *VoteResp) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
+	if m.Id != 0 {
+		n += 1 + sovMsg(uint64(m.Id))
+	}
 	if m.Term != 0 {
 		n += 1 + sovMsg(uint64(m.Term))
 	}
@@ -1453,6 +1515,9 @@ func (m *AppendResp) Size() (n int) {
 	}
 	var l int
 	_ = l
+	if m.Id != 0 {
+		n += 1 + sovMsg(uint64(m.Id))
+	}
 	if m.Term != 0 {
 		n += 1 + sovMsg(uint64(m.Term))
 	}
@@ -1495,9 +1560,42 @@ func (this *VoteReq) String() string {
 	}
 	s := strings.Join([]string{`&VoteReq{`,
 		`Id:` + fmt.Sprintf("%v", this.Id) + `,`,
+		`From:` + fmt.Sprintf("%v", this.From) + `,`,
 		`Term:` + fmt.Sprintf("%v", this.Term) + `,`,
 		`LastLogIndex:` + fmt.Sprintf("%v", this.LastLogIndex) + `,`,
 		`LastLogTerm:` + fmt.Sprintf("%v", this.LastLogTerm) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *AppendReq) String() string {
+	if this == nil {
+		return "nil"
+	}
+	repeatedStringForLogs := "[]*Log{"
+	for _, f := range this.Logs {
+		repeatedStringForLogs += strings.Replace(f.String(), "Log", "Log", 1) + ","
+	}
+	repeatedStringForLogs += "}"
+	s := strings.Join([]string{`&AppendReq{`,
+		`Id:` + fmt.Sprintf("%v", this.Id) + `,`,
+		`From:` + fmt.Sprintf("%v", this.From) + `,`,
+		`Term:` + fmt.Sprintf("%v", this.Term) + `,`,
+		`PrevLogIndex:` + fmt.Sprintf("%v", this.PrevLogIndex) + `,`,
+		`PrevLogTerm:` + fmt.Sprintf("%v", this.PrevLogTerm) + `,`,
+		`LeaderCommit:` + fmt.Sprintf("%v", this.LeaderCommit) + `,`,
+		`Logs:` + repeatedStringForLogs + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *HeartbeatReq) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&HeartbeatReq{`,
+		`Term:` + fmt.Sprintf("%v", this.Term) + `,`,
+		`LeaderCommit:` + fmt.Sprintf("%v", this.LeaderCommit) + `,`,
 		`}`,
 	}, "")
 	return s
@@ -1526,43 +1624,12 @@ func (this *Log) String() string {
 	}, "")
 	return s
 }
-func (this *AppendReq) String() string {
-	if this == nil {
-		return "nil"
-	}
-	repeatedStringForLogs := "[]*Log{"
-	for _, f := range this.Logs {
-		repeatedStringForLogs += strings.Replace(f.String(), "Log", "Log", 1) + ","
-	}
-	repeatedStringForLogs += "}"
-	s := strings.Join([]string{`&AppendReq{`,
-		`Id:` + fmt.Sprintf("%v", this.Id) + `,`,
-		`Term:` + fmt.Sprintf("%v", this.Term) + `,`,
-		`PrevLogIndex:` + fmt.Sprintf("%v", this.PrevLogIndex) + `,`,
-		`PrevLogTerm:` + fmt.Sprintf("%v", this.PrevLogTerm) + `,`,
-		`LeaderCommit:` + fmt.Sprintf("%v", this.LeaderCommit) + `,`,
-		`Logs:` + repeatedStringForLogs + `,`,
-		`}`,
-	}, "")
-	return s
-}
-func (this *HeartbeatReq) String() string {
-	if this == nil {
-		return "nil"
-	}
-	s := strings.Join([]string{`&HeartbeatReq{`,
-		`Id:` + fmt.Sprintf("%v", this.Id) + `,`,
-		`Term:` + fmt.Sprintf("%v", this.Term) + `,`,
-		`LeaderCommit:` + fmt.Sprintf("%v", this.LeaderCommit) + `,`,
-		`}`,
-	}, "")
-	return s
-}
 func (this *VoteResp) String() string {
 	if this == nil {
 		return "nil"
 	}
 	s := strings.Join([]string{`&VoteResp{`,
+		`Id:` + fmt.Sprintf("%v", this.Id) + `,`,
 		`Term:` + fmt.Sprintf("%v", this.Term) + `,`,
 		`Grant:` + fmt.Sprintf("%v", this.Grant) + `,`,
 		`}`,
@@ -1574,6 +1641,7 @@ func (this *AppendResp) String() string {
 		return "nil"
 	}
 	s := strings.Join([]string{`&AppendResp{`,
+		`Id:` + fmt.Sprintf("%v", this.Id) + `,`,
 		`Term:` + fmt.Sprintf("%v", this.Term) + `,`,
 		`Success:` + fmt.Sprintf("%v", this.Success) + `,`,
 		`LastLogIndex:` + fmt.Sprintf("%v", this.LastLogIndex) + `,`,
@@ -1644,12 +1712,31 @@ func (m *VoteReq) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Id |= uint32(b&0x7F) << shift
+				m.Id |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
 		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field From", wireType)
+			}
+			m.From = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsg
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.From |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Term", wireType)
 			}
@@ -1668,7 +1755,7 @@ func (m *VoteReq) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 3:
+		case 4:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field LastLogIndex", wireType)
 			}
@@ -1687,7 +1774,7 @@ func (m *VoteReq) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 4:
+		case 5:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field LastLogTerm", wireType)
 			}
@@ -1702,6 +1789,298 @@ func (m *VoteReq) Unmarshal(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.LastLogTerm |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMsg(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthMsg
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthMsg
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *AppendReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMsg
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: AppendReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: AppendReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			m.Id = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsg
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Id |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field From", wireType)
+			}
+			m.From = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsg
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.From |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Term", wireType)
+			}
+			m.Term = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsg
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Term |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PrevLogIndex", wireType)
+			}
+			m.PrevLogIndex = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsg
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.PrevLogIndex |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PrevLogTerm", wireType)
+			}
+			m.PrevLogTerm = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsg
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.PrevLogTerm |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LeaderCommit", wireType)
+			}
+			m.LeaderCommit = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsg
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.LeaderCommit |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Logs", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsg
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMsg
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMsg
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Logs = append(m.Logs, &Log{})
+			if err := m.Logs[len(m.Logs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMsg(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthMsg
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthMsg
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *HeartbeatReq) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMsg
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: HeartbeatReq: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: HeartbeatReq: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Term", wireType)
+			}
+			m.Term = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsg
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Term |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LeaderCommit", wireType)
+			}
+			m.LeaderCommit = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsg
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.LeaderCommit |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -1993,298 +2372,6 @@ func (m *Log) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *AppendReq) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowMsg
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: AppendReq: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: AppendReq: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
-			}
-			m.Id = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMsg
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Id |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Term", wireType)
-			}
-			m.Term = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMsg
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Term |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PrevLogIndex", wireType)
-			}
-			m.PrevLogIndex = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMsg
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.PrevLogIndex |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PrevLogTerm", wireType)
-			}
-			m.PrevLogTerm = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMsg
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.PrevLogTerm |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LeaderCommit", wireType)
-			}
-			m.LeaderCommit = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMsg
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.LeaderCommit |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 6:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Logs", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMsg
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthMsg
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthMsg
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Logs = append(m.Logs, &Log{})
-			if err := m.Logs[len(m.Logs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipMsg(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthMsg
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthMsg
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *HeartbeatReq) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowMsg
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: HeartbeatReq: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: HeartbeatReq: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
-			}
-			m.Id = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMsg
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Id |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Term", wireType)
-			}
-			m.Term = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMsg
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Term |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field LeaderCommit", wireType)
-			}
-			m.LeaderCommit = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMsg
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.LeaderCommit |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipMsg(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if skippy < 0 {
-				return ErrInvalidLengthMsg
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthMsg
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
 func (m *VoteResp) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2316,6 +2403,25 @@ func (m *VoteResp) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			m.Id = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsg
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Id |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Term", wireType)
 			}
 			m.Term = 0
@@ -2333,7 +2439,7 @@ func (m *VoteResp) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 2:
+		case 3:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Grant", wireType)
 			}
@@ -2408,6 +2514,25 @@ func (m *AppendResp) Unmarshal(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			m.Id = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsg
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Id |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Term", wireType)
 			}
 			m.Term = 0
@@ -2425,7 +2550,7 @@ func (m *AppendResp) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 2:
+		case 3:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Success", wireType)
 			}
@@ -2445,7 +2570,7 @@ func (m *AppendResp) Unmarshal(dAtA []byte) error {
 				}
 			}
 			m.Success = bool(v != 0)
-		case 3:
+		case 4:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field LastLogIndex", wireType)
 			}

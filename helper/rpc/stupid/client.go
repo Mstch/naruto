@@ -40,15 +40,17 @@ func (c *clientImpl) Notify(name string, arg proto.Message) error {
 	return write(c.conn, name, arg)
 }
 
-func (c *clientImpl) RegHandler(name string, h func(arg proto.Message) (res proto.Message), argId, resId uint8) error {
+func (c *clientImpl) RegHandler(name string, h func(arg proto.Message), argId uint8) error {
 	if len(name) > 255 {
 		return errors.New("name too lang, maxsize is 255")
 	}
 	c.regLock.Lock()
 	c.handlers[name] = &handler{
-		handleFunc: h,
-		argId:      argId,
-		resId:      resId,
+		handleFunc: func(arg proto.Message) (res proto.Message) {
+			h(arg)
+			return nil
+		},
+		argId: argId,
 	}
 	c.regLock.Unlock()
 	return nil

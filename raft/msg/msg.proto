@@ -2,26 +2,31 @@ syntax = "proto3";
 
 
 message VoteReq {
-    uint32 id = 1;
-    uint32 term = 2;
-    uint64 lastLogIndex = 3;
-    uint32 lastLogTerm = 4;
+    //quorum序列号
+    uint64 id = 1;
+    //来自哪个节点
+    uint32 from = 2;
+    uint32 term = 3;
+    uint64 lastLogIndex = 4;
+    uint32 lastLogTerm = 5;
 }
 
 
 message AppendReq {
-    uint32 id = 1;
-    uint32 term = 2;
-    uint64 prevLogIndex = 3;
-    uint32 prevLogTerm = 4;
-    uint64 leaderCommit = 5;
-    repeated Log logs = 6;
+    //quorum序列号,非论文中的id
+    uint64 id = 1;
+    //来自哪个节点
+    uint32 from = 2;
+    uint32 term = 3;
+    uint64 prevLogIndex = 4;
+    uint32 prevLogTerm = 5;
+    uint64 leaderCommit = 6;
+    repeated Log logs = 7;
 }
 
 message HeartbeatReq {
-    uint32 id = 1;
-    uint32 term = 2;
-    uint64 leaderCommit = 3;
+    uint32 term = 1;
+    uint64 leaderCommit = 2;
 }
 
 
@@ -43,13 +48,15 @@ message Log {
 
 
 message VoteResp {
-    uint32 term = 1;
-    bool grant = 2;
+    uint64 id = 1;
+    uint32 term = 2;
+    bool grant = 3;
 }
 message AppendResp {
-    uint32 term = 1;
-    bool success = 2;
-    uint64 lastLogIndex = 3;
+    uint64 id = 1;
+    uint32 term = 2;
+    bool success = 3;
+    uint64 lastLogIndex = 4;
 
 }
 message HeartbeatResp {

@@ -8,16 +8,15 @@ import (
 )
 
 type Config struct {
-	Port       uint32  `yaml:"port"`
-	UPort      uint32  `yaml:"uport"`
-	LaunchSize uint32  `yaml:"launch_size"`
+	Port       uint32 `yaml:"port"`
+	UPort      uint32 `yaml:"uport"`
+	LaunchSize uint32 `yaml:"launch_size"`
 	LogLevel   string `yaml:"log_level"`
 }
 
 var Conf *Config
 
 func init() {
-	//TODO 文件配置
 	Conf = &Config{
 		Port:       1000,
 		UPort:      8848,

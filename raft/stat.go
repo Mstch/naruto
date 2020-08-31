@@ -15,44 +15,62 @@ const (
 	leader
 )
 
-var key = []byte("node-state")
-
 var (
 	ruleLock        sync.Mutex
 	nodeRule        rule
 	voteFor         uint32
 	id              uint32
-	lastCommitIndex uint64
-	lastLogIndex    uint64
-	lastApplyIndex  uint64
 	nodeTerm        uint32
+	lastCommitIndex uint64
+	lastApplyIndex  uint64
 )
 var nodeDB *db.DB
 
-func init() {
+func StartStatDB() {
 	var err error
 	nodeDB, err = db.NewDB("node-data", &pebble.Options{})
 	if err != nil {
 		panic(err)
 	}
-}
-func loadFromDB() {
-	_, err := nodeDB.Get(key, func(k, v []byte) (interface{}, error) {
-		nodeRule = util.BytesToUInt32(v[:4])
-		lastCommitIndex = util.BytesToUInt64(v[4:12])
-		lastApplyIndex = util.BytesToUInt64(v[12:20])
-		nodeTerm = util.BytesToUInt32(v[20:24])
-		id = util.BytesToUInt32(v[24:28])
-		voteFor = util.BytesToUInt32(v[28:32])
+	_, err = nodeDB.Get([]byte("nodeRule"), func(k, v []byte) (interface{}, error) {
+		nodeRule = util.BytesToUInt32(v)
 		return nil, nil
 	})
 	if err != nil {
 		panic(err)
 	}
-}
-
-func becomeCandidate() {
-}
-
-func becomeFollower() {
+	_, err = nodeDB.Get([]byte("voteFor"), func(k, v []byte) (interface{}, error) {
+		voteFor = util.BytesToUInt32(v)
+		return nil, nil
+	})
+	if err != nil {
+		panic(err)
+	}
+	_, err = nodeDB.Get([]byte("id"), func(k, v []byte) (interface{}, error) {
+		id = util.BytesToUInt32(v)
+		return nil, nil
+	})
+	if err != nil {
+		panic(err)
+	}
+	_, err = nodeDB.Get([]byte("nodeTerm"), func(k, v []byte) (interface{}, error) {
+		return util.BytesToUInt32(v), nil
+	})
+	if err != nil {
+		panic(err)
+	}
+	_, err = nodeDB.Get([]byte("lastCommitIndex"), func(k, v []byte) (interface{}, error) {
+		lastCommitIndex = util.BytesToUInt64(v)
+		return nil, nil
+	})
+	if err != nil {
+		panic(err)
+	}
+	_, err = nodeDB.Get([]byte("lastApplyIndex"), func(k, v []byte) (interface{}, error) {
+		lastApplyIndex = util.BytesToUInt64(v)
+		return nil, nil
+	})
+	if err != nil {
+		panic(err)
+	}
 }

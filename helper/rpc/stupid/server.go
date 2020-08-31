@@ -27,19 +27,21 @@ func DefaultServerInstance() *serverImpl {
 	return serverInstance
 }
 
-func (s *serverImpl) Listen(address string) {
+func (s *serverImpl) Listen(address string) error {
 	l, err := net.Listen("tcp", address)
-	defer l.Close()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	for {
-		c, _ := l.Accept()
+		c, err := l.Accept()
+		if err != nil {
+			return err
+		}
 		go serveConn(s.handlers, c)
 	}
 }
 
-func (s *serverImpl) RegHandler(name string, h func(arg proto.Message) (res proto.Message), argId, resId uint8) error {
+func (s *serverImpl) RegHandler(name string, h func(arg proto.Message) (res proto.Message), argId uint8) error {
 	if len(name) > 0xff {
 		return errors.New("name too lang, maxsize is 255")
 	}
@@ -47,7 +49,6 @@ func (s *serverImpl) RegHandler(name string, h func(arg proto.Message) (res prot
 	s.handlers[name] = &handler{
 		handleFunc: h,
 		argId:      argId,
-		resId:      resId,
 	}
 	s.regLock.Unlock()
 	return nil
