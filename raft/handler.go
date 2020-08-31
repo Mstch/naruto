@@ -1,6 +1,7 @@
 package raft
 
 import (
+	"github.com/Mstch/naruto/helper/logger"
 	"github.com/Mstch/naruto/helper/rpc"
 	"github.com/Mstch/naruto/helper/rpc/stupid"
 	"github.com/Mstch/naruto/raft/msg"
@@ -98,6 +99,7 @@ func regServerHandlers(server rpc.Server) {
 	}
 	err = server.RegHandler("Heartbeat", func(arg proto.Message) (res proto.Message) {
 		if termInterceptor(arg.(*msg.HeartbeatReq).Term) {
+			commitIndexInterceptor(arg.(*msg.HeartbeatReq).LeaderCommit)
 			r := atomic.LoadUint32(&nodeRule)
 			if h, ok := serverHandlerDict[r]["Heartbeat"]; ok {
 				return h(arg)
@@ -116,6 +118,7 @@ func regServerHandlers(server rpc.Server) {
 	}
 	err = server.RegHandler("Append", func(arg proto.Message) (res proto.Message) {
 		if termInterceptor(arg.(*msg.AppendReq).Term) {
+			commitIndexInterceptor(arg.(*msg.HeartbeatReq).LeaderCommit)
 			r := atomic.LoadUint32(&nodeRule)
 			if h, ok := serverHandlerDict[r]["Append"]; ok {
 				return h(arg)
@@ -192,6 +195,9 @@ func termInterceptor(term uint32) bool {
 func commitIndexInterceptor(commitIndex uint64) {
 	selfAppliedIndex := atomic.LoadUint64(&lastApplyIndex)
 	if commitIndex > selfAppliedIndex {
-
+		err := applyTo(commitIndex)
+		if err != nil {
+			logger.Error("apply to %d failed caused by %s", commitIndex, err)
+		}
 	}
 }
