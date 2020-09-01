@@ -8,18 +8,16 @@ import (
 )
 
 type Config struct {
-	Port       uint32 `yaml:"port"`
-	UPort      uint32 `yaml:"uport"`
-	LaunchSize uint32 `yaml:"launch_size"`
-	LogLevel   string `yaml:"log_level"`
+	Id         uint32            `yaml:"id"`
+	LaunchSize uint32            `yaml:"launch_size"`
+	LogLevel   string            `yaml:"log_level"`
+	Members    map[uint32]string `yaml:"members"`
 }
 
 var Conf *Config
 
 func init() {
 	Conf = &Config{
-		Port:       1000,
-		UPort:      8848,
 		LaunchSize: 3,
 		LogLevel:   "INFO",
 	}
@@ -27,15 +25,15 @@ func init() {
 	if err == nil {
 		_ = yaml.Unmarshal(ymlFile, Conf)
 	}
-	port, err := strconv.Atoi(os.Getenv("PORT"))
+	id, err := strconv.Atoi(os.Getenv("NARUTO_ID"))
 	if err == nil {
-		Conf.Port = uint32(port)
+		Conf.Id = uint32(id)
 	}
-	launchSize, err := strconv.Atoi(os.Getenv("LAUNCH_SIZE"))
+	launchSize, err := strconv.Atoi(os.Getenv("NARUTO_LAUNCH_SIZE"))
 	if err == nil {
 		Conf.LaunchSize = uint32(launchSize)
 	}
-	logLevel := os.Getenv("LOG_LEVEL")
+	logLevel := os.Getenv("NARUTO_LOG_LEVEL")
 	if logLevel != "" {
 		Conf.LogLevel = logLevel
 	}
