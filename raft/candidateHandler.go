@@ -4,6 +4,7 @@ import (
 	"github.com/Mstch/naruto/helper/logger"
 	"github.com/Mstch/naruto/helper/quorum"
 	"github.com/Mstch/naruto/raft/msg"
+	"sync/atomic"
 )
 
 type candidateHandler struct{}
@@ -28,5 +29,9 @@ func (f *candidateHandler) onAppendReq(arg *msg.AppendReq) *msg.AppendResp {
 }
 
 func (f *candidateHandler) OnVoteMajority() {
-
+	atomic.StoreUint32(&nodeRule, leader)
+	broadcast("Heartbeat",&msg.HeartbeatReq{
+		Term:         atomic.LoadUint32(&nodeTerm),
+		LeaderCommit: atomic.LoadUint64(&lastCommitIndex),
+	})
 }

@@ -2,6 +2,7 @@ package file
 
 import (
 	"errors"
+	"fmt"
 	"github.com/Mstch/naruto/conf"
 	"github.com/Mstch/naruto/helper/logger"
 	"github.com/Mstch/naruto/helper/member"
@@ -50,39 +51,39 @@ func (m *Members) Self() *member.Member {
 }
 
 func NewFileMembers() *Members {
-	if conf.Conf.Members != nil || len(conf.Conf.Members) > 1 {
-		var self *member.Member
-		discoveringChan := make(chan *member.Member, len(conf.Conf.Members))
-		for id, address := range conf.Conf.Members {
-			infoSplit := strings.Split(address, ":")
-			if len(infoSplit) != 2 {
-				logger.Error("配置文件中的节点信息不符合格式'host:port':%s,忽略此节点配置", address)
-				continue
-			}
-			port, err := strconv.Atoi(infoSplit[1])
-			if err != nil {
-				logger.Error("配置文件中的节点信息不符合格式'host:port':%s,忽略此节点配置", address)
-				continue
-			}
-			m := &member.Member{
-				Id:      id,
-				Host:    infoSplit[0],
-				Port:    uint32(port),
-				Address: address,
-			}
-			if id == conf.Conf.Id {
-				self = m
-			} else {
-				discoveringChan <- m
-			}
+	l := len(conf.Conf.Members)
+	if uint32(l) < conf.Conf.LaunchSize {
+		panic(errors.New(fmt.Sprintf("members in config file not present,num of members [%d] less than launch_size [%d]", l, conf.Conf.LaunchSize)))
+	}
+	var self *member.Member
+	discoveringChan := make(chan *member.Member, l)
+	for id, address := range conf.Conf.Members {
+		infoSplit := strings.Split(address, ":")
+		if len(infoSplit) != 2 {
+			logger.Error("配置文件中的节点信息不符合格式[host:port]:%s,忽略此节点配置", address)
+			continue
 		}
-		return &Members{
-			self:            self,
-			discoveringChan: discoveringChan,
-			discoveredMap:   make(map[uint32]*member.Member, len(conf.Conf.Members)),
+		port, err := strconv.Atoi(infoSplit[1])
+		if err != nil {
+			logger.Error("配置文件中的节点信息不符合格式[host:port]:%s,忽略此节点配置", address)
+			continue
 		}
-	}else {
-		panic(errors.New("members in config file not present"))
+		m := &member.Member{
+			Id:      id,
+			Host:    infoSplit[0],
+			Port:    uint32(port),
+			Address: address,
+		}
+		if id == conf.Conf.Id {
+			self = m
+		} else {
+			discoveringChan <- m
+		}
+	}
+	return &Members{
+		self:            self,
+		discoveringChan: discoveringChan,
+		discoveredMap:   make(map[uint32]*member.Member, l),
 	}
 
 }

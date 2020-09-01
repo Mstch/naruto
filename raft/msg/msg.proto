@@ -54,13 +54,15 @@ message VoteResp {
 }
 message AppendResp {
     uint64 id = 1;
-    uint32 term = 2;
-    bool success = 3;
-    uint64 lastLogIndex = 4;
+    uint32 from = 2;
+    uint32 term = 3;
+    bool success = 4;
+    uint64 lastLogIndex = 5;
 
 }
 message HeartbeatResp {
     uint32 term = 1;
-    bool success = 2;
-    uint64 lastLogIndex = 3;
+    uint32 from = 2;
+    bool success = 3;
+    uint64 lastLogIndex = 4;
 }

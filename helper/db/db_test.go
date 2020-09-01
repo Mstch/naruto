@@ -24,3 +24,15 @@ func TestIter(t *testing.T) {
 	binary.BigEndian.PutUint64(start, 10)
 	binary.BigEndian.PutUint64(end, 20)
 }
+func TestDB_Get(t *testing.T) {
+	db, err := NewDB("test-data", &pebble.Options{})
+	if err != nil {
+		panic(err)
+	}
+	_, err = db.Get([]byte("fuck"), func(k, v []byte) (interface{}, error) {
+		return nil, nil
+	})
+	if err != nil {
+		panic(err)
+	}
+}

@@ -3,6 +3,7 @@ package raft
 import (
 	"github.com/Mstch/naruto/helper/logger"
 	"github.com/Mstch/naruto/helper/quorum"
+	"github.com/Mstch/naruto/helper/timer"
 	"github.com/Mstch/naruto/raft/msg"
 	"sync/atomic"
 )
@@ -43,8 +44,13 @@ func (f *followerHandler) onVoteReq(arg *msg.VoteReq) *msg.VoteResp {
 	}
 }
 
-func (f *followerHandler) onHeartbeatReq(arg *msg.HeartbeatReq) *msg.HeartbeatResp {
-	panic("implement me")
+func (f *followerHandler) onHeartbeatReq(_ *msg.HeartbeatReq) *msg.HeartbeatResp {
+	timer.Loop(electionTimerOption)
+	return &msg.HeartbeatResp{
+		Term:         atomic.LoadUint32(&nodeTerm),
+		Success:      true,
+		LastLogIndex: atomic.LoadUint64(&lastLogIndex),
+	}
 }
 
 func (f *followerHandler) onAppendReq(arg *msg.AppendReq) *msg.AppendResp {

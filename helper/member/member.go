@@ -1,6 +1,7 @@
 package member
 
 import (
+	"github.com/Mstch/naruto/helper/member/file"
 	"net"
 )
 
@@ -20,3 +21,6 @@ type Members interface {
 	Self() *Member
 }
 
+func Default() Members {
+	return file.NewFileMembers()
+}

@@ -19,7 +19,7 @@ type msgFactoryRegister struct {
 	factoryMap map[uint8]*factory
 }
 
-func DefaultRegisterInstance() *msgFactoryRegister {
+func MsgFactoryRegisterInstance() *msgFactoryRegister {
 	registerInstanceOnce.Do(func() {
 		registerInstance = &msgFactoryRegister{
 			factoryMap: make(map[uint8]*factory, 8),

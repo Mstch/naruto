@@ -3,5 +3,3 @@ services:
   raft:
     image: raft
     environment:
-      - PORT=1000
-      - LOG_LEVEL=DEBUG

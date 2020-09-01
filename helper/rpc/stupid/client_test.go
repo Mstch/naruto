@@ -26,7 +26,6 @@ func TestClientImpl_Notify(t *testing.T) {
 	}
 	for i := 0; i < 10; i++ {
 		err = c.Notify("fuck", &msg.HeartbeatReq{
-			Id:           uint32(i),
 			Term:         uint32(i),
 			LeaderCommit: uint64(i),
 		})
@@ -47,7 +46,7 @@ func TestServerImpl_Listen(t *testing.T) {
 		req := arg.(*msg.HeartbeatReq)
 		logger.Info("req:%s", req.String())
 		return nil
-	}, uint8(1), uint8(2))
+	}, uint8(1))
 	s.Listen(":1234")
 }
 
@@ -63,7 +62,7 @@ func BenchmarkStupid(b *testing.B) {
 			_ = arg.(*msg.HeartbeatReq)
 			//logger.Info("req:%s", req.String())
 			return nil
-		}, uint8(1), uint8(2))
+		}, uint8(1))
 		go s.Listen(":1234")
 	})
 	c := &clientImpl{}
@@ -74,7 +73,6 @@ func BenchmarkStupid(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		err = c.Notify("fuck", &msg.HeartbeatReq{
-			Id:           uint32(i),
 			Term:         uint32(i),
 			LeaderCommit: uint64(i),
 		})
@@ -130,4 +128,3 @@ func BenchmarkByte(t *testing.B) {
 	}
 	<-done
 }
-

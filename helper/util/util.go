@@ -22,6 +22,10 @@ func WriteUInt32ToBytes(data uint32, buf []byte) {
 	binary.BigEndian.PutUint32(buf, data)
 }
 
+func WriteInt32ToBytes(data int32, buf []byte) {
+	binary.BigEndian.PutUint32(buf, uint32(data))
+}
+
 func BytesToUInt32(data []byte) uint32 {
 	return binary.BigEndian.Uint32(data)
 }
@@ -33,7 +37,7 @@ func BytesToInt32(data []byte) int32 {
 	return int32(BytesToUInt32(data))
 }
 
-func Max(x,y uint64)uint64{
+func Max(x, y uint64) uint64 {
 	if x > y {
 		return x
 	}

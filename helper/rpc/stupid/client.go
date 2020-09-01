@@ -8,9 +8,10 @@ import (
 )
 
 type clientImpl struct {
-	conn     net.Conn
-	regLock  *sync.Mutex
-	handlers map[string]*handler
+	connected bool
+	conn      net.Conn
+	regLock   *sync.Mutex
+	handlers  map[string]*handler
 }
 
 func NewClientImpl() *clientImpl {
@@ -18,11 +19,26 @@ func NewClientImpl() *clientImpl {
 		regLock: &sync.Mutex{},
 	}
 }
-func (c *clientImpl) Dial(address string) error {
-	conn, err := net.Dial("tcp", address)
-	if err != nil {
-		return err
+
+//func (c *clientImpl) Dial(address string) error {
+//	if c.connected {
+//		return errors.New("there is already a connection successfully")
+//	}
+//	conn, err := net.Dial("tcp", address)
+//	if err != nil {
+//		return err
+//	}
+//	c.connected = true
+//	c.conn = conn
+//	go serveConn(c.handlers, conn)
+//	return nil
+//}
+
+func (c *clientImpl) Conn(conn net.Conn) error {
+	if c.connected {
+		return errors.New("there is already a connection successfully")
 	}
+	c.connected = true
 	c.conn = conn
 	go serveConn(c.handlers, conn)
 	return nil
@@ -54,4 +70,7 @@ func (c *clientImpl) RegHandler(name string, h func(arg proto.Message), argId ui
 	}
 	c.regLock.Unlock()
 	return nil
+}
+func (c *clientImpl) RemoteAddr() net.Addr {
+	return c.conn.RemoteAddr()
 }

@@ -22,9 +22,25 @@ func RegQuorum(quorum uint32, quorumCallback func()) uint64 {
 	}
 	return id
 }
+
+//TODO  member change test
+func ChangeQuorum(id uint64, delta int) {
+	if q, ok := quorumMap[id]; ok {
+		if delta > 0 {
+			q.quorum += uint32(delta)
+		} else if delta < 0 {
+			if uint32(-delta) < q.quorum {
+				q.quorum -= uint32(-delta)
+			} else {
+				q.quorumCallback()
+			}
+		}
+	}
+
+}
 func Approve(id uint64) {
 	q := quorumMap[id]
 	if atomic.AddUint32(&q.cur, 1) > atomic.LoadUint32(&q.quorum) {
-		delete(quorumMap,id)
+		delete(quorumMap, id)
 	}
 }

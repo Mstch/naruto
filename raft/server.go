@@ -1,11 +1,8 @@
 package raft
 
 import (
-	"github.com/Mstch/naruto/conf"
 	"github.com/Mstch/naruto/helper/logger"
-	"github.com/Mstch/naruto/helper/member"
 	"github.com/Mstch/naruto/helper/rpc"
-	"github.com/Mstch/naruto/helper/rpc/stupid"
 	"github.com/Mstch/naruto/raft/msg"
 	"github.com/gogo/protobuf/proto"
 	"sync/atomic"
@@ -140,15 +137,14 @@ func regServerHandlers(server rpc.Server) {
 }
 
 func StartupServer() {
-	server := stupid.DefaultServerInstance()
-	register := stupid.DefaultRegisterInstance()
+	server := rpc.DefaultServer()
+	register := rpc.DefaultRegister()
 	regProtoMsg(register)
 	regServerHandlers(server)
-	err := server.Listen(conf.Conf.Address)
+	err := server.Listen(memberManager.Self().Address)
 	if err != nil {
 		panic(err)
 	}
-	member.Startup()
 }
 
 func termInterceptor(term uint32) bool {
@@ -171,4 +167,3 @@ func commitIndexInterceptor(commitIndex uint64) {
 		}
 	}
 }
-

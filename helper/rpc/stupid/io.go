@@ -22,7 +22,7 @@ func serveConn(handlers map[string]*handler, conn net.Conn) {
 		}
 		go func(name string, msgBody []byte) {
 			if handler, ok := handlers[name]; ok {
-				factory := DefaultRegisterInstance().factoryMap[handler.argId]
+				factory := MsgFactoryRegisterInstance().factoryMap[handler.argId]
 				var arg proto.Message
 				if factory.pool != nil {
 					arg = factory.pool.Get().(proto.Message)

@@ -1,7 +1,9 @@
-	package rpc
+package rpc
 
 import (
+	"github.com/Mstch/naruto/helper/rpc/stupid"
 	"github.com/gogo/protobuf/proto"
+	"net"
 )
 
 /**
@@ -16,13 +18,24 @@ type Server interface {
 }
 
 type Client interface {
-	Dial(address string) error
+	Conn(conn net.Conn) error
 	Call(name string, arg proto.Message) (res proto.Message, err error)
 	AsyncCall(name string, arg proto.Message) (resC chan proto.Message, err error)
 	RegHandler(name string, handler func(arg proto.Message), argId uint8) error
 	Notify(name string, arg proto.Message) error
+	RemoteAddr() net.Addr
 }
 
 type MessageFactoryRegister interface {
 	RegMessageFactory(id uint8, usePool bool, factory func() proto.Message)
+}
+
+func DefaultServer() Server {
+	return stupid.ServerInstance()
+}
+func NewDefaultClient() Client {
+	return stupid.NewClientImpl()
+}
+func DefaultRegister() MessageFactoryRegister {
+	return stupid.MsgFactoryRegisterInstance()
 }

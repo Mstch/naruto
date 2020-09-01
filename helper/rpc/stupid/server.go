@@ -17,7 +17,7 @@ type serverImpl struct {
 	handlers map[string]*handler
 }
 
-func DefaultServerInstance() *serverImpl {
+func ServerInstance() *serverImpl {
 	serverInstanceOnce.Do(func() {
 		serverInstance = &serverImpl{
 			regLock:  sync.Mutex{},
