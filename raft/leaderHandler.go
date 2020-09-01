@@ -8,13 +8,16 @@ import (
 type leaderHandler struct{}
 
 func (f *leaderHandler) onHeartbeat() {
-	panic("implement me")
+	broadcast("Heartbeat", &msg.HeartbeatReq{
+		Term:         atomic.LoadUint32(&nodeTerm),
+		LeaderCommit: atomic.LoadUint64(&lastCommitIndex),
+	})
 }
 
 func (f *leaderHandler) onHeartbeatResp(arg *msg.HeartbeatResp) {
 	if arg.LastLogIndex < atomic.LoadUint64(&lastLogIndex) {
 		go func(resp *msg.HeartbeatResp) {
-
+			//TODO send append
 		}(arg)
 	}
 }

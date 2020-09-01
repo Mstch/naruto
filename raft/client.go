@@ -11,6 +11,7 @@ import (
 
 var (
 	memberManager = member.Default()
+	self          = memberManager.Self()
 	majority      uint32
 	clientMap     = make(map[uint32]rpc.Client)
 )

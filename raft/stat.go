@@ -1,9 +1,12 @@
 package raft
 
 import (
+	"github.com/Mstch/naruto/conf"
 	"github.com/Mstch/naruto/helper/db"
+	"github.com/Mstch/naruto/helper/logger"
 	"github.com/Mstch/naruto/helper/util"
 	"github.com/cockroachdb/pebble"
+	"os"
 )
 
 type rule = uint32
@@ -27,9 +30,14 @@ var statDB *db.DB
 
 func StartStatDB() {
 	var err error
-	statDB, err = db.NewDB("node-data", &pebble.Options{})
+	id = conf.Conf.Id
+	statDB, err = db.NewDB("stat-data", &pebble.Options{ErrorIfNotExists: true})
 	if err != nil {
-		panic(err)
+		if os.IsNotExist(err) {
+			logger.Info("stat-data db not exist,init node stat as follower first at startup")
+			initStatDB()
+			return
+		}
 	}
 	_, err = statDB.Get([]byte("nodeRule"), func(k, v []byte) (interface{}, error) {
 		nodeRule = util.BytesToUInt32(v)
@@ -40,13 +48,6 @@ func StartStatDB() {
 	}
 	_, err = statDB.Get([]byte("voteFor"), func(k, v []byte) (interface{}, error) {
 		voteFor = util.BytesToUInt32(v)
-		return nil, nil
-	})
-	if err != nil {
-		panic(err)
-	}
-	_, err = statDB.Get([]byte("id"), func(k, v []byte) (interface{}, error) {
-		id = util.BytesToUInt32(v)
 		return nil, nil
 	})
 	if err != nil {
@@ -72,5 +73,32 @@ func StartStatDB() {
 	if err != nil {
 		panic(err)
 	}
+}
 
+func initStatDB() {
+	err := statDB.Set([]byte("nodeRule"), util.UInt32ToBytes(follower))
+	if err != nil {
+		panic(err)
+	}
+	err = statDB.Set([]byte("voteFor"), util.UInt32ToBytes(0))
+	if err != nil {
+		panic(err)
+	}
+	err = statDB.Set([]byte("nodeTerm"), util.UInt32ToBytes(0))
+	if err != nil {
+		panic(err)
+	}
+	err = statDB.Set([]byte("lastCommitIndex"), util.UInt32ToBytes(0))
+	if err != nil {
+		panic(err)
+	}
+	err = statDB.Set([]byte("lastApplyIndex"), util.UInt32ToBytes(0))
+	if err != nil {
+		panic(err)
+	}
+	nodeRule = follower
+	voteFor = 0
+	nodeTerm = 0
+	lastCommitIndex = 0
+	lastApplyIndex = 0
 }

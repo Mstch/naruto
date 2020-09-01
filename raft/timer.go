@@ -21,7 +21,7 @@ var (
 	}, Min: 400, Max: 400}
 )
 
-func StartupTimer()  {
+func StartupTimer() {
 	if nodeRule == follower || nodeRule == candidate {
 		timer.Loop(electionTimerOption)
 	} else if nodeRule == leader {
@@ -42,8 +42,7 @@ func dispatchTimeout(tt timeoutType) {
 		}
 	case heartbeat:
 		{
-			r := atomic.LoadUint32(&nodeRule)
-			if r == leader {
+			if atomic.LoadUint32(&nodeRule) == leader {
 				lh.onHeartbeat()
 			}
 		}

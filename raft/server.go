@@ -98,10 +98,11 @@ func regServerHandlers(server rpc.Server) {
 	}
 	err = server.RegHandler("Heartbeat", func(arg proto.Message) (res proto.Message) {
 		if termInterceptor(arg.(*msg.HeartbeatReq).Term) {
-			commitIndexInterceptor(arg.(*msg.HeartbeatReq).LeaderCommit)
 			r := atomic.LoadUint32(&nodeRule)
 			if h, ok := serverHandlerDict[r]["Heartbeat"]; ok {
-				return h(arg)
+				res := h(arg)
+				go commitIndexInterceptor(arg.(*msg.HeartbeatReq).LeaderCommit)
+				return res
 			}
 			return nil
 		} else {
@@ -117,10 +118,11 @@ func regServerHandlers(server rpc.Server) {
 	}
 	err = server.RegHandler("Append", func(arg proto.Message) (res proto.Message) {
 		if termInterceptor(arg.(*msg.AppendReq).Term) {
-			commitIndexInterceptor(arg.(*msg.HeartbeatReq).LeaderCommit)
 			r := atomic.LoadUint32(&nodeRule)
 			if h, ok := serverHandlerDict[r]["Append"]; ok {
-				return h(arg)
+				res := h(arg)
+				go commitIndexInterceptor(arg.(*msg.HeartbeatReq).LeaderCommit)
+				return res
 			}
 			return nil
 		} else {
@@ -141,7 +143,7 @@ func StartupServer() {
 	register := rpc.DefaultRegister()
 	regProtoMsg(register)
 	regServerHandlers(server)
-	err := server.Listen(memberManager.Self().Address)
+	err := server.Listen(self.Address)
 	if err != nil {
 		panic(err)
 	}
