@@ -60,6 +60,9 @@ func (c *clientImpl) RegHandler(name string, h func(arg proto.Message), argId ui
 	if len(name) > 255 {
 		return errors.New("name too lang, maxsize is 255")
 	}
+	if _, ok := MsgFactoryRegisterInstance().factoryMap[argId]; !ok {
+		return errors.New("argId not registered")
+	}
 	c.regLock.Lock()
 	c.handlers[name] = &handler{
 		handleFunc: func(arg proto.Message) (res proto.Message) {

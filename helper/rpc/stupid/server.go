@@ -2,6 +2,7 @@ package stupid
 
 import (
 	"errors"
+	"github.com/Mstch/naruto/helper/logger"
 	"github.com/gogo/protobuf/proto"
 	"net"
 	"sync"
@@ -27,23 +28,29 @@ func ServerInstance() *serverImpl {
 	return serverInstance
 }
 
-func (s *serverImpl) Listen(address string) error {
+func (s *serverImpl) Serve(address string) error {
 	l, err := net.Listen("tcp", address)
 	if err != nil {
 		return err
 	}
-	for {
-		c, err := l.Accept()
-		if err != nil {
-			return err
+	go func() {
+		for {
+			c, err := l.Accept()
+			if err != nil {
+				logger.Error("accept error caused by %s", err)
+			}
+			go serveConn(s.handlers, c)
 		}
-		go serveConn(s.handlers, c)
-	}
+	}()
+	return nil
 }
 
 func (s *serverImpl) RegHandler(name string, h func(arg proto.Message) (res proto.Message), argId uint8) error {
 	if len(name) > 0xff {
 		return errors.New("name too lang, maxsize is 255")
+	}
+	if _, ok := MsgFactoryRegisterInstance().factoryMap[argId]; !ok {
+		return errors.New("argId not registered")
 	}
 	s.regLock.Lock()
 	s.handlers[name] = &handler{

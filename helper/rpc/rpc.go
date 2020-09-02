@@ -13,11 +13,13 @@ import (
 */
 
 type Server interface {
-	Listen(address string) error
+	//will block
+	Serve(address string) error
 	RegHandler(name string, handler func(arg proto.Message) (res proto.Message), argId uint8) error
 }
 
 type Client interface {
+	//not block
 	Conn(conn net.Conn) error
 	Call(name string, arg proto.Message) (res proto.Message, err error)
 	AsyncCall(name string, arg proto.Message) (resC chan proto.Message, err error)

@@ -24,7 +24,7 @@ func serveConn(handlers map[string]*handler, conn net.Conn) {
 			if handler, ok := handlers[name]; ok {
 				factory := MsgFactoryRegisterInstance().factoryMap[handler.argId]
 				var arg proto.Message
-				if factory.pool != nil {
+				if factory.usePool {
 					arg = factory.pool.Get().(proto.Message)
 				} else {
 					arg = factory.produce()

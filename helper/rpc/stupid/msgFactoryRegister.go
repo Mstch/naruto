@@ -13,6 +13,7 @@ var (
 type factory struct {
 	produce func() proto.Message
 	pool    *sync.Pool
+	usePool bool
 }
 
 type msgFactoryRegister struct {
@@ -34,5 +35,6 @@ func (m *msgFactoryRegister) RegMessageFactory(id uint8, usePool bool, f func() 
 	}
 	if usePool {
 		m.factoryMap[id].pool = &sync.Pool{New: func() interface{} { return f() }}
+		m.factoryMap[id].usePool = true
 	}
 }
