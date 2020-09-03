@@ -16,23 +16,10 @@ type clientImpl struct {
 
 func NewClientImpl() *clientImpl {
 	return &clientImpl{
-		regLock: &sync.Mutex{},
+		regLock:  &sync.Mutex{},
+		handlers: make(map[string]*handler),
 	}
 }
-
-//func (c *clientImpl) Dial(address string) error {
-//	if c.connected {
-//		return errors.New("there is already a connection successfully")
-//	}
-//	conn, err := net.Dial("tcp", address)
-//	if err != nil {
-//		return err
-//	}
-//	c.connected = true
-//	c.conn = conn
-//	go serveConn(c.handlers, conn)
-//	return nil
-//}
 
 func (c *clientImpl) Conn(conn net.Conn) error {
 	if c.connected {

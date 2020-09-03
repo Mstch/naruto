@@ -7,6 +7,17 @@ import (
 	"github.com/gogo/protobuf/proto"
 	goio "io"
 	"net"
+	"sync"
+)
+
+var (
+	UsePool    = false
+	writerPool = sync.Pool{New: func() interface{} {
+		return NewUint32DelimitedWriter(nil, binary.BigEndian)
+	}}
+	readerPool = sync.Pool{New: func() interface{} {
+		return NewUint32DelimitedReader(nil, binary.BigEndian, 10*1000*1000)
+	}}
 )
 
 func serveConn(handlers map[string]*handler, conn net.Conn) {
@@ -24,11 +35,7 @@ func serveConn(handlers map[string]*handler, conn net.Conn) {
 			if handler, ok := handlers[name]; ok {
 				factory := MsgFactoryRegisterInstance().factoryMap[handler.argId]
 				var arg proto.Message
-				if factory.usePool {
-					arg = factory.pool.Get().(proto.Message)
-				} else {
-					arg = factory.produce()
-				}
+				arg = factory.produce()
 				err := proto.Unmarshal(msgBody, arg)
 				if err != nil {
 					logger.Error("Unmarshal failed:%s", err)
@@ -48,8 +55,17 @@ func serveConn(handlers map[string]*handler, conn net.Conn) {
 
 func read(conn net.Conn) (string, []byte, error) {
 	msg := &StupidMsg{}
-	reader := io.NewUint32DelimitedReader(conn, binary.BigEndian, 10*1000*1000)
-	err := reader.ReadMsg(msg)
+
+	var err error
+	if UsePool {
+		reader := readerPool.Get().(*uint32Reader)
+		reader.r = conn
+		err = reader.ReadMsg(msg)
+		readerPool.Put(reader)
+	} else {
+		reader := io.NewUint32DelimitedReader(conn, binary.BigEndian, 10*1000*1000)
+		err = reader.ReadMsg(msg)
+	}
 	if err != nil {
 		return "", nil, err
 	}
@@ -64,7 +80,15 @@ func write(conn net.Conn, name string, res proto.Message) error {
 	if err != nil {
 		return err
 	}
-	writer := io.NewUint32DelimitedWriter(conn, binary.BigEndian)
-	err = writer.WriteMsg(msg)
+
+	if UsePool {
+		writer := writerPool.Get().(*uint32Writer)
+		writer.w = conn
+		err = writer.WriteMsg(msg)
+		writerPool.Put(writer)
+	} else {
+		writer := io.NewUint32DelimitedWriter(conn, binary.BigEndian)
+		err = writer.WriteMsg(msg)
+	}
 	return err
 }
