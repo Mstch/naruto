@@ -10,29 +10,30 @@ import (
 
 type candidateHandler struct{}
 
-func (f *candidateHandler) onElection() {
+func (c *candidateHandler) onElection() {
 	timer.Loop(electionTimerOption)
 }
 
-func (f *candidateHandler) onVoteResp(arg *msg.VoteResp) {
-	logger.Info("receive vote resp as candidate")
+func (c *candidateHandler) onVoteResp(arg *msg.VoteResp) {
 	if arg.Grant {
 		quorum.Approve(arg.Id)
 	}
 }
 
-func (f *candidateHandler) onHeartbeatReq(arg *msg.HeartbeatReq) *msg.HeartbeatResp {
+func (c *candidateHandler) onHeartbeatReq(arg *msg.HeartbeatReq) *msg.HeartbeatResp {
 	atomic.StoreUint32(&nodeRule, follower)
 	return fh.onHeartbeatReq(arg)
 }
 
-func (f *candidateHandler) onAppendReq(arg *msg.AppendReq) *msg.AppendResp {
+func (c *candidateHandler) onAppendReq(arg *msg.AppendReq) *msg.AppendResp {
 	atomic.StoreUint32(&nodeRule, follower)
 	return fh.onAppendReq(arg)
 }
 
-func (f *candidateHandler) OnVoteMajority() {
+func (c *candidateHandler) OnVoteMajority() {
+	logger.Info("receive majority vote")
 	atomic.StoreUint32(&nodeRule, leader)
+	timer.Loop(heartbeatTimerOption)
 	broadcast("Heartbeat", &msg.HeartbeatReq{
 		Term:         atomic.LoadUint32(&nodeTerm),
 		LeaderCommit: atomic.LoadUint64(&lastCommitIndex),

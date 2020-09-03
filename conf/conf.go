@@ -1,6 +1,8 @@
 package conf
 
 import (
+	"errors"
+	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
@@ -36,5 +38,8 @@ func init() {
 	logLevel := os.Getenv("NARUTO_LOG_LEVEL")
 	if logLevel != "" {
 		Conf.LogLevel = logLevel
+	}
+	if Conf.Id == 0 {
+		panic(errors.New(fmt.Sprintf("invalid id %d", Conf.Id)))
 	}
 }

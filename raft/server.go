@@ -63,19 +63,19 @@ func regProtoMsg(register rpc.MessageFactoryRegister) {
 		return &msg.VoteReq{}
 	})
 	register.RegMessageFactory(voteResp, true, func() proto.Message {
-		return &msg.VoteReq{}
+		return &msg.VoteResp{}
 	})
 	register.RegMessageFactory(heartbeatReq, true, func() proto.Message {
-		return &msg.VoteReq{}
+		return &msg.HeartbeatReq{}
 	})
 	register.RegMessageFactory(heartbeatResp, true, func() proto.Message {
-		return &msg.VoteReq{}
+		return &msg.HeartbeatResp{}
 	})
 	register.RegMessageFactory(appendReq, true, func() proto.Message {
-		return &msg.VoteReq{}
+		return &msg.AppendReq{}
 	})
 	register.RegMessageFactory(appendResp, true, func() proto.Message {
-		return &msg.VoteReq{}
+		return &msg.AppendResp{}
 	})
 }
 func regServerHandlers(server rpc.Server) {
@@ -169,6 +169,7 @@ func commitIndexInterceptor(commitIndex uint64) {
 		}
 	}
 }
+
 
 
 func commonReadHandler(cmd *msg.Cmd) (string, error) {

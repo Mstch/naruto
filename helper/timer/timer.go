@@ -3,12 +3,14 @@ package timer
 import (
 	"github.com/Mstch/naruto/helper/logger"
 	"math/rand"
+	"sync"
 	"time"
 )
 
 var (
 	timer        = time.NewTimer(0)
 	currentTimer *RTimerOption
+	timerLock    = sync.Mutex{}
 )
 
 type RTimerOption struct {
@@ -18,11 +20,9 @@ type RTimerOption struct {
 	Max  int
 }
 
-
-
 func Loop(t *RTimerOption) {
 	if currentTimer == t {
-		timer.Reset(calTimeout(t.Min, t.Max))
+		reset(timer, calTimeout(t.Min, t.Max))
 		return
 	}
 	currentTimer = t
@@ -35,9 +35,14 @@ func Loop(t *RTimerOption) {
 		for {
 			<-timer.C
 			go t.Task()
-			timer.Reset(calTimeout(t.Min, t.Max))
+			reset(timer, calTimeout(t.Min, t.Max))
 		}
 	}()
+}
+func reset(timer *time.Timer, timeout time.Duration) {
+	timerLock.Lock()
+	timer.Reset(timeout)
+	timerLock.Unlock()
 }
 
 func calTimeout(min, max int) time.Duration {

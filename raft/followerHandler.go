@@ -20,14 +20,13 @@ func (f *followerHandler) onElection() {
 				ch.OnVoteMajority()
 			}
 		}),
-		Term:         atomic.LoadUint32(&nodeTerm),
+		Term:         atomic.AddUint32(&nodeTerm, 1),
 		LastLogIndex: atomic.LoadUint64(&lastLogIndex),
 		LastLogTerm:  atomic.LoadUint32(&lastLogTerm),
 	})
 }
 
 func (f *followerHandler) onVoteReq(arg *msg.VoteReq) *msg.VoteResp {
-	logger.Info("receive vote req as follower")
 	if (atomic.LoadUint32(&voteFor) == 0 || atomic.LoadUint32(&voteFor) == arg.From) &&
 		arg.GetTerm() >= atomic.LoadUint32(&lastLogTerm) &&
 		arg.LastLogIndex >= atomic.LoadUint64(&lastLogIndex) {

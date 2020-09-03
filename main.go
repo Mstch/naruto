@@ -1,8 +1,13 @@
 package main
 
-import "github.com/Mstch/naruto/helper/member"
+import "github.com/Mstch/naruto/raft"
 
 func main() {
-	member.Startup()
-	<-member.OK
+	raft.StartupStatDB()
+	raft.StartupKVDB()
+	raft.StartLogDB()
+	raft.StartupServer()
+	raft.StartupClient()
+	raft.StartupTimer()
+	select {}
 }

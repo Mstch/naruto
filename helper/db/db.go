@@ -112,12 +112,11 @@ func (d *DB) BatchSet(ks, vs [][]byte) error {
 
 func (d *DB) Last(processor DataProcessor) ([]byte, []byte, error) {
 	iter := d.db.NewIter(&pebble.IterOptions{})
-	iter.Last()
-	k := iter.Key()
-	v := iter.Value()
-	_, err := processor(k, v)
-	if err != nil {
-		return nil, nil, err
+	if iter.Last() {
+		k := iter.Key()
+		v := iter.Value()
+		_, err := processor(k, v)
+		return k, v, err
 	}
-	return k, v, nil
+	return nil, nil, nil
 }

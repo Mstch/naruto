@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/Mstch/naruto/conf"
 	"github.com/Mstch/naruto/helper/logger"
-	"github.com/Mstch/naruto/helper/member"
+	"github.com/Mstch/naruto/helper/member/domain"
 	"net"
 	"strconv"
 	"strings"
@@ -13,9 +13,10 @@ import (
 )
 
 type Members struct {
-	self            *member.Member
-	discoveringChan chan *member.Member
-	discoveredMap   map[uint32]*member.Member
+	self            *domain.Member
+	discoveringChan chan *domain.Member
+	discoveredMap   map[uint32]*domain.Member
+	discoverLock    sync.Mutex
 }
 
 func (m *Members) Discover() {
@@ -25,15 +26,19 @@ func (m *Members) Discover() {
 		for {
 			dm := <-m.discoveringChan
 			{
-				go func(dm *member.Member) {
+				go func(dm *domain.Member) {
 					var err error
 					dm.Conn, err = net.Dial("tcp", dm.Address)
 					if err != nil {
-						_ = dm.Conn.Close()
+						if dm.Conn != nil {
+							_ = dm.Conn.Close()
+						}
 						m.discoveringChan <- dm
 						return
 					}
+					m.discoverLock.Lock()
 					m.discoveredMap[dm.Id] = dm
+					m.discoverLock.Unlock()
 					waiter.Done()
 				}(dm)
 			}
@@ -42,11 +47,11 @@ func (m *Members) Discover() {
 	waiter.Wait()
 }
 
-func (m *Members) GetMembers() map[uint32]*member.Member {
+func (m *Members) GetMembers() map[uint32]*domain.Member {
 	return m.discoveredMap
 }
 
-func (m *Members) Self() *member.Member {
+func (m *Members) Self() *domain.Member {
 	return m.self
 }
 
@@ -55,8 +60,8 @@ func NewFileMembers() *Members {
 	if uint32(l) < conf.Conf.LaunchSize {
 		panic(errors.New(fmt.Sprintf("members in config file not present,num of members [%d] less than launch_size [%d]", l, conf.Conf.LaunchSize)))
 	}
-	var self *member.Member
-	discoveringChan := make(chan *member.Member, l)
+	var self *domain.Member
+	discoveringChan := make(chan *domain.Member, l)
 	for id, address := range conf.Conf.Members {
 		infoSplit := strings.Split(address, ":")
 		if len(infoSplit) != 2 {
@@ -68,7 +73,7 @@ func NewFileMembers() *Members {
 			logger.Error("配置文件中的节点信息不符合格式[host:port]:%s,忽略此节点配置", address)
 			continue
 		}
-		m := &member.Member{
+		m := &domain.Member{
 			Id:      id,
 			Host:    infoSplit[0],
 			Port:    uint32(port),
@@ -83,7 +88,8 @@ func NewFileMembers() *Members {
 	return &Members{
 		self:            self,
 		discoveringChan: discoveringChan,
-		discoveredMap:   make(map[uint32]*member.Member, l),
+		discoverLock:    sync.Mutex{},
+		discoveredMap:   make(map[uint32]*domain.Member, l),
 	}
 
 }

@@ -18,7 +18,7 @@ var (
 
 func regClientHandlers(client rpc.Client) {
 	err := client.RegHandler("Vote", func(arg proto.Message) {
-		if termInterceptor(arg.(*msg.VoteReq).Term) {
+		if termInterceptor(arg.(*msg.VoteResp).Term) {
 			if h, ok := clientHandlerDict[atomic.LoadUint32(&nodeRule)]["Vote"]; ok {
 				h(arg)
 			}
@@ -28,7 +28,7 @@ func regClientHandlers(client rpc.Client) {
 		panic(err)
 	}
 	err = client.RegHandler("Heartbeat", func(arg proto.Message) {
-		if termInterceptor(arg.(*msg.HeartbeatReq).Term) {
+		if termInterceptor(arg.(*msg.HeartbeatResp).Term) {
 			if h, ok := clientHandlerDict[atomic.LoadUint32(&nodeRule)]["Heartbeat"]; ok {
 				h(arg)
 			}
@@ -38,7 +38,7 @@ func regClientHandlers(client rpc.Client) {
 		panic(err)
 	}
 	err = client.RegHandler("Append", func(arg proto.Message) {
-		if termInterceptor(arg.(*msg.AppendReq).Term) {
+		if termInterceptor(arg.(*msg.AppendResp).Term) {
 			if h, ok := clientHandlerDict[atomic.LoadUint32(&nodeRule)]["Append"]; ok {
 				h(arg)
 			}
@@ -50,6 +50,7 @@ func regClientHandlers(client rpc.Client) {
 }
 
 func StartupClient() {
+	memberManager.Discover()
 	members := memberManager.GetMembers()
 	majority = uint32((len(members) + 1) / 2)
 	for id, m := range members {

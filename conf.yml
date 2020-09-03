@@ -1,5 +1,0 @@
-launch_size: 3
-members:
-  1: 'localhost:1001'
-  2: 'localhost:1002'
-  3: 'localhost:1003'

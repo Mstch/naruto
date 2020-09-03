@@ -6,7 +6,7 @@ import (
 	"github.com/Mstch/naruto/helper/logger"
 	"github.com/Mstch/naruto/helper/util"
 	"github.com/cockroachdb/pebble"
-	"os"
+	"strings"
 )
 
 type rule = uint32
@@ -24,19 +24,22 @@ var (
 	nodeTerm        uint32
 	lastCommitIndex uint64
 	lastApplyIndex  uint64
+	leaderId        uint32
 	matchIndex      map[uint32]uint64
 )
 var statDB *db.DB
 
-func StartStatDB() {
+func StartupStatDB() {
 	var err error
 	id = conf.Conf.Id
 	statDB, err = db.NewDB("stat-data", &pebble.Options{ErrorIfNotExists: true})
 	if err != nil {
-		if os.IsNotExist(err) {
+		if strings.HasSuffix(err.Error(), "no such file or directory") {
 			logger.Info("stat-data db not exist,init node stat as follower first at startup")
 			initStatDB()
 			return
+		} else {
+			panic(err)
 		}
 	}
 	_, err = statDB.Get([]byte("nodeRule"), func(k, v []byte) (interface{}, error) {
@@ -73,10 +76,22 @@ func StartStatDB() {
 	if err != nil {
 		panic(err)
 	}
+	_, err = statDB.Get([]byte("leaderId"), func(k, v []byte) (interface{}, error) {
+		leaderId = util.BytesToUInt32(v)
+		return nil, nil
+	})
+	if err != nil {
+		panic(err)
+	}
 }
 
 func initStatDB() {
-	err := statDB.Set([]byte("nodeRule"), util.UInt32ToBytes(follower))
+	var err error
+	statDB, err = db.NewDB("stat-data", &pebble.Options{})
+	if err != nil {
+		panic(err)
+	}
+	err = statDB.Set([]byte("nodeRule"), util.UInt32ToBytes(follower))
 	if err != nil {
 		panic(err)
 	}
@@ -88,11 +103,15 @@ func initStatDB() {
 	if err != nil {
 		panic(err)
 	}
-	err = statDB.Set([]byte("lastCommitIndex"), util.UInt32ToBytes(0))
+	err = statDB.Set([]byte("lastCommitIndex"), util.UInt64ToBytes(0))
 	if err != nil {
 		panic(err)
 	}
-	err = statDB.Set([]byte("lastApplyIndex"), util.UInt32ToBytes(0))
+	err = statDB.Set([]byte("lastApplyIndex"), util.UInt64ToBytes(0))
+	if err != nil {
+		panic(err)
+	}
+	err = statDB.Set([]byte("leaderId"), util.UInt64ToBytes(0))
 	if err != nil {
 		panic(err)
 	}
@@ -101,4 +120,5 @@ func initStatDB() {
 	nodeTerm = 0
 	lastCommitIndex = 0
 	lastApplyIndex = 0
+	leaderId = 0
 }
