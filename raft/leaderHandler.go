@@ -7,14 +7,14 @@ import (
 
 type leaderHandler struct{}
 
-func (f *leaderHandler) onHeartbeat() {
+func (l *leaderHandler) onHeartbeat() {
 	broadcast("Heartbeat", &msg.HeartbeatReq{
 		Term:         atomic.LoadUint32(&nodeTerm),
 		LeaderCommit: atomic.LoadUint64(&lastCommitIndex),
 	})
 }
 
-func (f *leaderHandler) onHeartbeatResp(arg *msg.HeartbeatResp) {
+func (l *leaderHandler) onHeartbeatResp(arg *msg.HeartbeatResp) {
 	if arg.LastLogIndex < atomic.LoadUint64(&lastLogIndex) {
 		go func(resp *msg.HeartbeatResp) {
 			//TODO send append
@@ -22,10 +22,13 @@ func (f *leaderHandler) onHeartbeatResp(arg *msg.HeartbeatResp) {
 	}
 }
 
-func (f *leaderHandler) onAppendResp(arg *msg.AppendResp) {
-	panic("implement me")
+
+
+func (l *leaderHandler) onAppendResp(arg *msg.AppendResp) {
 }
 
-func (f *leaderHandler) OnAppendMajority() {
-
+func (l *leaderHandler) OnAppendMajority(index uint64) {
+	if index > atomic.LoadUint64(&lastCommitIndex) {
+		applyTo(index)
+	}
 }

@@ -9,7 +9,7 @@ import (
 
 var kvDB *db.DB
 
-func init() {
+func StartupKVDB() {
 	var err error
 	kvDB, err = db.NewDB("raft-kv", &pebble.Options{})
 	if err != nil {
@@ -35,4 +35,7 @@ func apply(cmd *msg.Cmd) (string, error) {
 	default:
 		return "", errors.New("unknown cmd opt")
 	}
+}
+func isReadCmd(cmd *msg.Cmd) bool {
+	return cmd.Opt == msg.Get
 }

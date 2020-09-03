@@ -143,7 +143,7 @@ func StartupServer() {
 	register := rpc.DefaultRegister()
 	regProtoMsg(register)
 	regServerHandlers(server)
-	err := server.Listen(self.Address)
+	err := server.Serve(self.Address)
 	if err != nil {
 		panic(err)
 	}
@@ -168,4 +168,9 @@ func commitIndexInterceptor(commitIndex uint64) {
 			logger.Error("apply to %d failed caused by %s", commitIndex, err)
 		}
 	}
+}
+
+
+func commonReadHandler(cmd *msg.Cmd) (string, error) {
+	return apply(cmd)
 }

@@ -46,6 +46,33 @@ func (Cmd_Opt) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_c06e4cca6c2cc899, []int{3, 0}
 }
 
+type Cmd_ReadMode int32
+
+const (
+	Default      Cmd_ReadMode = 0
+	Lease        Cmd_ReadMode = 1
+	ReadIndex    Cmd_ReadMode = 2
+	FollowerRead Cmd_ReadMode = 3
+)
+
+var Cmd_ReadMode_name = map[int32]string{
+	0: "Default",
+	1: "Lease",
+	2: "ReadIndex",
+	3: "FollowerRead",
+}
+
+var Cmd_ReadMode_value = map[string]int32{
+	"Default":      0,
+	"Lease":        1,
+	"ReadIndex":    2,
+	"FollowerRead": 3,
+}
+
+func (Cmd_ReadMode) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_c06e4cca6c2cc899, []int{3, 1}
+}
+
 type VoteReq struct {
 	//quorum序列号
 	Id uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -132,7 +159,7 @@ type AppendReq struct {
 	PrevLogIndex uint64 `protobuf:"varint,4,opt,name=prevLogIndex,proto3" json:"prevLogIndex,omitempty"`
 	PrevLogTerm  uint32 `protobuf:"varint,5,opt,name=prevLogTerm,proto3" json:"prevLogTerm,omitempty"`
 	LeaderCommit uint64 `protobuf:"varint,6,opt,name=leaderCommit,proto3" json:"leaderCommit,omitempty"`
-	Logs         []*Log `protobuf:"bytes,7,rep,name=logs,proto3" json:"logs,omitempty"`
+	Logs         []*Log `protobuf:"buffer,7,rep,name=logs,proto3" json:"logs,omitempty"`
 }
 
 func (m *AppendReq) Reset()      { *m = AppendReq{} }
@@ -268,9 +295,10 @@ func (m *HeartbeatReq) GetLeaderCommit() uint64 {
 }
 
 type Cmd struct {
-	Opt   Cmd_Opt `protobuf:"varint,1,opt,name=opt,proto3,enum=Cmd_Opt" json:"opt,omitempty"`
-	Key   string  `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
-	Value string  `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
+	Opt      Cmd_Opt      `protobuf:"varint,1,opt,name=opt,proto3,enum=Cmd_Opt" json:"opt,omitempty"`
+	ReadMode Cmd_ReadMode `protobuf:"varint,2,opt,name=readMode,proto3,enum=Cmd_ReadMode" json:"readMode,omitempty"`
+	Key      string       `protobuf:"buffer,3,opt,name=key,proto3" json:"key,omitempty"`
+	Value    string       `protobuf:"buffer,4,opt,name=value,proto3" json:"value,omitempty"`
 }
 
 func (m *Cmd) Reset()      { *m = Cmd{} }
@@ -312,6 +340,13 @@ func (m *Cmd) GetOpt() Cmd_Opt {
 	return Get
 }
 
+func (m *Cmd) GetReadMode() Cmd_ReadMode {
+	if m != nil {
+		return m.ReadMode
+	}
+	return Default
+}
+
 func (m *Cmd) GetKey() string {
 	if m != nil {
 		return m.Key
@@ -327,7 +362,7 @@ func (m *Cmd) GetValue() string {
 }
 
 type Log struct {
-	Cmd   *Cmd   `protobuf:"bytes,1,opt,name=cmd,proto3" json:"cmd,omitempty"`
+	Cmd   *Cmd   `protobuf:"buffer,1,opt,name=cmd,proto3" json:"cmd,omitempty"`
 	Term  uint32 `protobuf:"varint,2,opt,name=term,proto3" json:"term,omitempty"`
 	Index uint64 `protobuf:"varint,3,opt,name=index,proto3" json:"index,omitempty"`
 }
@@ -586,8 +621,68 @@ func (m *HeartbeatResp) GetLastLogIndex() uint64 {
 	return 0
 }
 
+type CmdResp struct {
+	Res        string `protobuf:"buffer,1,opt,name=res,proto3" json:"res,omitempty"`
+	IsLeader   bool   `protobuf:"varint,2,opt,name=isLeader,proto3" json:"isLeader,omitempty"`
+	LeaderAddr string `protobuf:"buffer,3,opt,name=leaderAddr,proto3" json:"leaderAddr,omitempty"`
+}
+
+func (m *CmdResp) Reset()      { *m = CmdResp{} }
+func (*CmdResp) ProtoMessage() {}
+func (*CmdResp) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c06e4cca6c2cc899, []int{8}
+}
+func (m *CmdResp) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *CmdResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_CmdResp.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *CmdResp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CmdResp.Merge(m, src)
+}
+func (m *CmdResp) XXX_Size() int {
+	return m.Size()
+}
+func (m *CmdResp) XXX_DiscardUnknown() {
+	xxx_messageInfo_CmdResp.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CmdResp proto.InternalMessageInfo
+
+func (m *CmdResp) GetRes() string {
+	if m != nil {
+		return m.Res
+	}
+	return ""
+}
+
+func (m *CmdResp) GetIsLeader() bool {
+	if m != nil {
+		return m.IsLeader
+	}
+	return false
+}
+
+func (m *CmdResp) GetLeaderAddr() string {
+	if m != nil {
+		return m.LeaderAddr
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterEnum("Cmd_Opt", Cmd_Opt_name, Cmd_Opt_value)
+	proto.RegisterEnum("Cmd_ReadMode", Cmd_ReadMode_name, Cmd_ReadMode_value)
 	proto.RegisterType((*VoteReq)(nil), "VoteReq")
 	proto.RegisterType((*AppendReq)(nil), "AppendReq")
 	proto.RegisterType((*HeartbeatReq)(nil), "HeartbeatReq")
@@ -596,45 +691,60 @@ func init() {
 	proto.RegisterType((*VoteResp)(nil), "VoteResp")
 	proto.RegisterType((*AppendResp)(nil), "AppendResp")
 	proto.RegisterType((*HeartbeatResp)(nil), "HeartbeatResp")
+	proto.RegisterType((*CmdResp)(nil), "CmdResp")
 }
 
 func init() { proto.RegisterFile("msg.proto", fileDescriptor_c06e4cca6c2cc899) }
 
 var fileDescriptor_c06e4cca6c2cc899 = []byte{
-	// 463 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x53, 0xbd, 0x8e, 0x13, 0x31,
-	0x10, 0x5e, 0xaf, 0x37, 0x97, 0x64, 0xee, 0x47, 0x91, 0x75, 0x82, 0x15, 0x85, 0x15, 0xb9, 0x4a,
-	0x95, 0xe2, 0xe0, 0x05, 0x20, 0x88, 0x03, 0x29, 0xd2, 0x49, 0x06, 0xd1, 0x6f, 0xb2, 0x66, 0xb5,
-	0x22, 0x8e, 0xcd, 0xda, 0x39, 0x41, 0x87, 0x68, 0x68, 0x79, 0x0c, 0xde, 0x04, 0xca, 0x94, 0x57,
-	0x92, 0x4d, 0x43, 0x79, 0x8f, 0x80, 0xec, 0x4d, 0x90, 0xb9, 0xac, 0x10, 0x12, 0xdd, 0x7c, 0x9f,
-	0x34, 0x33, 0xdf, 0xcc, 0x7c, 0x03, 0x7d, 0x69, 0x8a, 0xb1, 0xae, 0x94, 0x55, 0xec, 0x33, 0x82,
-	0xee, 0x6b, 0x65, 0x05, 0x17, 0xef, 0xc8, 0x19, 0xc4, 0x65, 0x9e, 0xa2, 0x21, 0x1a, 0x25, 0x3c,
-	0x2e, 0x73, 0x42, 0x20, 0x79, 0x53, 0x29, 0x99, 0xc6, 0x43, 0x34, 0x3a, 0xe5, 0x3e, 0x76, 0x9c,
-	0x15, 0x95, 0x4c, 0x71, 0xc3, 0xb9, 0x98, 0x30, 0x38, 0x59, 0x64, 0xc6, 0x4e, 0x55, 0xf1, 0x62,
-	0x99, 0x8b, 0xf7, 0x69, 0xe2, 0x2b, 0xfc, 0xc1, 0x91, 0x21, 0x1c, 0xef, 0xf0, 0x2b, 0x97, 0xde,
-	0xf1, 0xe9, 0x21, 0xc5, 0xbe, 0x21, 0xe8, 0x3f, 0xd6, 0x5a, 0x2c, 0xf3, 0xff, 0xd4, 0xa2, 0x2b,
-	0x71, 0x7d, 0x57, 0x4b, 0xc8, 0x39, 0x2d, 0x3b, 0x1c, 0x6a, 0x09, 0x28, 0x3f, 0x91, 0xc8, 0x72,
-	0x51, 0x4d, 0x94, 0x94, 0xa5, 0x4d, 0x8f, 0x76, 0x13, 0x05, 0x1c, 0x49, 0x21, 0x59, 0xa8, 0xc2,
-	0xa4, 0xdd, 0x21, 0x1e, 0x1d, 0x5f, 0x24, 0xe3, 0xa9, 0x2a, 0xb8, 0x67, 0xd8, 0x33, 0x38, 0x79,
-	0x2e, 0xb2, 0xca, 0xce, 0x44, 0x66, 0xdd, 0x2c, 0x7b, 0x9d, 0xe8, 0xce, 0xce, 0xc2, 0x0e, 0xf1,
-	0x61, 0x07, 0x36, 0x03, 0x3c, 0x91, 0x39, 0x79, 0x00, 0x58, 0x69, 0xeb, 0xb3, 0xcf, 0x2e, 0x7a,
-	0xe3, 0x89, 0xcc, 0xc7, 0x57, 0xda, 0x72, 0x47, 0x92, 0x01, 0xe0, 0xb7, 0xe2, 0x83, 0xcf, 0xee,
-	0x73, 0x17, 0x92, 0x73, 0xe8, 0x5c, 0x67, 0x8b, 0x95, 0xf0, 0x5b, 0xe9, 0xf3, 0x06, 0xb0, 0xfb,
-	0x80, 0xaf, 0xb4, 0x25, 0x5d, 0xc0, 0x97, 0xc2, 0x0e, 0x22, 0x17, 0xbc, 0x14, 0x76, 0x80, 0xd8,
-	0x25, 0xe0, 0xa9, 0x2a, 0xc8, 0x3d, 0xc0, 0x73, 0xd9, 0xec, 0xdb, 0xcd, 0x32, 0x91, 0x39, 0x77,
-	0xc4, 0x6f, 0xe9, 0x71, 0x20, 0xfd, 0x1c, 0x3a, 0xa5, 0xdf, 0x2d, 0xf6, 0x9a, 0x1b, 0xc0, 0x9e,
-	0x42, 0xaf, 0xf1, 0x91, 0xd1, 0x6d, 0xc7, 0x6b, 0xab, 0x52, 0x54, 0xd9, 0xd2, 0xfa, 0x2a, 0x3d,
-	0xde, 0x00, 0xf6, 0x09, 0x01, 0xec, 0x4d, 0xd0, 0x5e, 0xe8, 0x9f, 0x5c, 0x90, 0x42, 0xd7, 0xac,
-	0xe6, 0x73, 0x61, 0x8c, 0x37, 0x40, 0x8f, 0xef, 0xe1, 0x81, 0x57, 0x3b, 0x87, 0x5e, 0x65, 0x2b,
-	0x38, 0x0d, 0xee, 0x67, 0x74, 0xeb, 0x01, 0xdb, 0xa4, 0x04, 0x6d, 0xf1, 0xdf, 0xdb, 0xb6, 0xbc,
-	0xc8, 0x93, 0x47, 0xeb, 0x0d, 0x8d, 0x6e, 0x36, 0x34, 0xba, 0xdd, 0x50, 0xf4, 0xb1, 0xa6, 0xe8,
-	0x6b, 0x4d, 0xd1, 0xf7, 0x9a, 0xa2, 0x75, 0x4d, 0xd1, 0x8f, 0x9a, 0xa2, 0x9f, 0x35, 0x8d, 0x6e,
-	0x6b, 0x8a, 0xbe, 0x6c, 0x69, 0xb4, 0xde, 0xd2, 0xe8, 0x66, 0x4b, 0xa3, 0xd9, 0x91, 0xff, 0xe3,
-	0x87, 0xbf, 0x02, 0x00, 0x00, 0xff, 0xff, 0x85, 0x3f, 0xd1, 0xe4, 0xd4, 0x03, 0x00, 0x00,
+	// 571 buffer of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x54, 0x41, 0x6f, 0xd3, 0x3c,
+	0x18, 0x8e, 0xe3, 0x76, 0x49, 0xde, 0xad, 0x53, 0x64, 0x4d, 0xdf, 0x17, 0xed, 0x60, 0x55, 0x3e,
+	0x8d, 0x4b, 0x0f, 0x85, 0x3f, 0x30, 0x3a, 0x6d, 0x20, 0x15, 0x4d, 0x32, 0x08, 0xce, 0x59, 0xed,
+	0x45, 0x15, 0x49, 0x1d, 0x12, 0x77, 0xc0, 0x0d, 0x71, 0xe1, 0xca, 0xcf, 0xe0, 0x9f, 0xc0, 0xb1,
+	0xe2, 0xb4, 0x23, 0x4d, 0x2f, 0x1c, 0xf7, 0x13, 0x90, 0x9d, 0xb6, 0x0a, 0x6b, 0x84, 0x90, 0xb8,
+	0xbd, 0xcf, 0x13, 0xfb, 0x7d, 0x5e, 0x3f, 0x7e, 0x1c, 0x08, 0xb2, 0x32, 0x19, 0xe4, 0x85, 0xd2,
+	0x8a, 0x7d, 0x42, 0xe0, 0xbd, 0x54, 0x5a, 0x72, 0xf9, 0x86, 0x1c, 0x82, 0x3b, 0x15, 0x11, 0xea,
+	0xa3, 0x93, 0x0e, 0x77, 0xa7, 0x82, 0x10, 0xe8, 0x5c, 0x17, 0x2a, 0x8b, 0xdc, 0x3e, 0x3a, 0xe9,
+	0x71, 0x5b, 0x1b, 0x4e, 0xcb, 0x22, 0x8b, 0x70, 0xcd, 0x99, 0x9a, 0x30, 0x38, 0x48, 0xe3, 0x52,
+	0x8f, 0x55, 0xf2, 0x74, 0x26, 0xe4, 0xbb, 0xa8, 0x63, 0x3b, 0xfc, 0xc6, 0x91, 0x3e, 0xec, 0xaf,
+	0xf1, 0x0b, 0xb3, 0xbd, 0x6b, 0xb7, 0x37, 0x29, 0xf6, 0x15, 0x41, 0x70, 0x9a, 0xe7, 0x72, 0x26,
+	0xfe, 0x71, 0x96, 0xbc, 0x90, 0x37, 0xf7, 0x67, 0x69, 0x72, 0x66, 0x96, 0x35, 0x6e, 0xce, 0xd2,
+	0xa0, 0xec, 0x89, 0x64, 0x2c, 0x64, 0x31, 0x52, 0x59, 0x36, 0xd5, 0xd1, 0xde, 0xfa, 0x44, 0x0d,
+	0x8e, 0x44, 0xd0, 0x49, 0x55, 0x52, 0x46, 0x5e, 0x1f, 0x9f, 0xec, 0x0f, 0x3b, 0x83, 0xb1, 0x4a,
+	0xb8, 0x65, 0xd8, 0x39, 0x1c, 0x3c, 0x91, 0x71, 0xa1, 0xaf, 0x64, 0xac, 0xcd, 0x59, 0x36, 0x73,
+	0xa2, 0x7b, 0x9e, 0x35, 0x15, 0xdc, 0x5d, 0x05, 0xf6, 0x1d, 0x01, 0x1e, 0x65, 0x82, 0x1c, 0x03,
+	0x56, 0xb9, 0xb6, 0xdb, 0x0f, 0x87, 0xfe, 0x60, 0x94, 0x89, 0xc1, 0x65, 0xae, 0xb9, 0x21, 0xc9,
+	0x03, 0xf0, 0x0b, 0x19, 0x8b, 0x67, 0x4a, 0x48, 0xdb, 0xe3, 0x70, 0xd8, 0xb3, 0x0b, 0xf8, 0x9a,
+	0xe4, 0xdb, 0xcf, 0x24, 0x04, 0xfc, 0x5a, 0xbe, 0xb7, 0x6e, 0x05, 0xdc, 0x94, 0xe4, 0x08, 0xba,
+	0x37, 0x71, 0x3a, 0x97, 0xd6, 0xa5, 0x80, 0xd7, 0x80, 0xfd, 0x0f, 0xf8, 0x32, 0xd7, 0xc4, 0x03,
+	0x7c, 0x21, 0x75, 0xe8, 0x98, 0xe2, 0xb9, 0xd4, 0x21, 0x62, 0x23, 0xf0, 0x37, 0x6d, 0xc9, 0x3e,
+	0x78, 0x67, 0xf2, 0x3a, 0x9e, 0xa7, 0x66, 0x45, 0x00, 0xdd, 0xb1, 0x8c, 0x4b, 0x19, 0x22, 0xd2,
+	0x83, 0xc0, 0xac, 0xb1, 0x46, 0x87, 0x2e, 0x09, 0xe1, 0xe0, 0x5c, 0xa5, 0xa9, 0x7a, 0x2b, 0x0b,
+	0x43, 0x87, 0x98, 0x5d, 0x00, 0x1e, 0xab, 0x84, 0xfc, 0x07, 0x78, 0x92, 0xd5, 0x17, 0x6c, 0xcc,
+	0x1b, 0x65, 0x82, 0x1b, 0x62, 0xeb, 0x95, 0xdb, 0xf0, 0xea, 0x08, 0xba, 0x53, 0x7b, 0x99, 0xd8,
+	0x9a, 0x54, 0x03, 0x76, 0x06, 0x7e, 0x1d, 0xdc, 0x32, 0x6f, 0x4b, 0x4b, 0x5b, 0x97, 0xa4, 0x88,
+	0x67, 0xda, 0x76, 0xf1, 0x79, 0x0d, 0xd8, 0x47, 0x04, 0xb0, 0x49, 0x5d, 0x7b, 0xa3, 0xbf, 0x8a,
+	0x5d, 0x04, 0x5e, 0x39, 0x9f, 0x4c, 0x64, 0x59, 0x5a, 0x2f, 0x7d, 0xbe, 0x81, 0x3b, 0x8f, 0xa3,
+	0xbb, 0xfb, 0x38, 0xd8, 0x1c, 0x7a, 0x8d, 0xc0, 0x94, 0x79, 0x6b, 0x62, 0xda, 0x46, 0x69, 0xc8,
+	0xe2, 0x3f, 0xcb, 0xb6, 0xbc, 0x49, 0xf6, 0x0a, 0x3c, 0xe3, 0xbb, 0x11, 0x0c, 0x01, 0x17, 0xb2,
+	0xb4, 0x7a, 0x01, 0x37, 0x25, 0x39, 0x06, 0x7f, 0x5a, 0x8e, 0x6d, 0x1c, 0xad, 0xa4, 0xcf, 0xb7,
+	0x98, 0x50, 0x80, 0x3a, 0xa8, 0xa7, 0x42, 0x14, 0xeb, 0x40, 0x35, 0x98, 0xc7, 0x8f, 0x16, 0x4b,
+	0xea, 0xdc, 0x2e, 0xa9, 0x73, 0xb7, 0xa4, 0xe8, 0x43, 0x45, 0xd1, 0x97, 0x8a, 0xa2, 0x6f, 0x15,
+	0x45, 0x8b, 0x8a, 0xa2, 0x1f, 0x15, 0x45, 0x3f, 0x2b, 0xea, 0xdc, 0x55, 0x14, 0x7d, 0x5e, 0x51,
+	0x67, 0xb1, 0xa2, 0xce, 0xed, 0x8a, 0x3a, 0x57, 0x7b, 0xf6, 0x8f, 0xf4, 0xf0, 0x57, 0x00, 0x00,
+	0x00, 0xff, 0xff, 0x97, 0x5b, 0xfc, 0x6e, 0x9e, 0x04, 0x00, 0x00,
 }
 
 func (x Cmd_Opt) String() string {
 	s, ok := Cmd_Opt_name[int32(x)]
+	if ok {
+		return s
+	}
+	return strconv.Itoa(int(x))
+}
+func (x Cmd_ReadMode) String() string {
+	s, ok := Cmd_ReadMode_name[int32(x)]
 	if ok {
 		return s
 	}
@@ -770,6 +880,9 @@ func (this *Cmd) Equal(that interface{}) bool {
 		return false
 	}
 	if this.Opt != that1.Opt {
+		return false
+	}
+	if this.ReadMode != that1.ReadMode {
 		return false
 	}
 	if this.Key != that1.Key {
@@ -909,6 +1022,36 @@ func (this *HeartbeatResp) Equal(that interface{}) bool {
 	}
 	return true
 }
+func (this *CmdResp) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*CmdResp)
+	if !ok {
+		that2, ok := that.(CmdResp)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Res != that1.Res {
+		return false
+	}
+	if this.IsLeader != that1.IsLeader {
+		return false
+	}
+	if this.LeaderAddr != that1.LeaderAddr {
+		return false
+	}
+	return true
+}
 func (this *VoteReq) GoString() string {
 	if this == nil {
 		return "nil"
@@ -956,9 +1099,10 @@ func (this *Cmd) GoString() string {
 	if this == nil {
 		return "nil"
 	}
-	s := make([]string, 0, 7)
+	s := make([]string, 0, 8)
 	s = append(s, "&msg.Cmd{")
 	s = append(s, "Opt: "+fmt.Sprintf("%#v", this.Opt)+",\n")
+	s = append(s, "ReadMode: "+fmt.Sprintf("%#v", this.ReadMode)+",\n")
 	s = append(s, "Key: "+fmt.Sprintf("%#v", this.Key)+",\n")
 	s = append(s, "Value: "+fmt.Sprintf("%#v", this.Value)+",\n")
 	s = append(s, "}")
@@ -1014,6 +1158,18 @@ func (this *HeartbeatResp) GoString() string {
 	s = append(s, "From: "+fmt.Sprintf("%#v", this.From)+",\n")
 	s = append(s, "Success: "+fmt.Sprintf("%#v", this.Success)+",\n")
 	s = append(s, "LastLogIndex: "+fmt.Sprintf("%#v", this.LastLogIndex)+",\n")
+	s = append(s, "}")
+	return strings.Join(s, "")
+}
+func (this *CmdResp) GoString() string {
+	if this == nil {
+		return "nil"
+	}
+	s := make([]string, 0, 7)
+	s = append(s, "&msg.CmdResp{")
+	s = append(s, "Res: "+fmt.Sprintf("%#v", this.Res)+",\n")
+	s = append(s, "IsLeader: "+fmt.Sprintf("%#v", this.IsLeader)+",\n")
+	s = append(s, "LeaderAddr: "+fmt.Sprintf("%#v", this.LeaderAddr)+",\n")
 	s = append(s, "}")
 	return strings.Join(s, "")
 }
@@ -1198,14 +1354,19 @@ func (m *Cmd) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.Value)
 		i = encodeVarintMsg(dAtA, i, uint64(len(m.Value)))
 		i--
-		dAtA[i] = 0x1a
+		dAtA[i] = 0x22
 	}
 	if len(m.Key) > 0 {
 		i -= len(m.Key)
 		copy(dAtA[i:], m.Key)
 		i = encodeVarintMsg(dAtA, i, uint64(len(m.Key)))
 		i--
-		dAtA[i] = 0x12
+		dAtA[i] = 0x1a
+	}
+	if m.ReadMode != 0 {
+		i = encodeVarintMsg(dAtA, i, uint64(m.ReadMode))
+		i--
+		dAtA[i] = 0x10
 	}
 	if m.Opt != 0 {
 		i = encodeVarintMsg(dAtA, i, uint64(m.Opt))
@@ -1404,6 +1565,53 @@ func (m *HeartbeatResp) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *CmdResp) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *CmdResp) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *CmdResp) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.LeaderAddr) > 0 {
+		i -= len(m.LeaderAddr)
+		copy(dAtA[i:], m.LeaderAddr)
+		i = encodeVarintMsg(dAtA, i, uint64(len(m.LeaderAddr)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.IsLeader {
+		i--
+		if m.IsLeader {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Res) > 0 {
+		i -= len(m.Res)
+		copy(dAtA[i:], m.Res)
+		i = encodeVarintMsg(dAtA, i, uint64(len(m.Res)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintMsg(dAtA []byte, offset int, v uint64) int {
 	offset -= sovMsg(v)
 	base := offset
@@ -1495,6 +1703,9 @@ func (m *Cmd) Size() (n int) {
 	_ = l
 	if m.Opt != 0 {
 		n += 1 + sovMsg(uint64(m.Opt))
+	}
+	if m.ReadMode != 0 {
+		n += 1 + sovMsg(uint64(m.ReadMode))
 	}
 	l = len(m.Key)
 	if l > 0 {
@@ -1589,6 +1800,26 @@ func (m *HeartbeatResp) Size() (n int) {
 	return n
 }
 
+func (m *CmdResp) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Res)
+	if l > 0 {
+		n += 1 + l + sovMsg(uint64(l))
+	}
+	if m.IsLeader {
+		n += 2
+	}
+	l = len(m.LeaderAddr)
+	if l > 0 {
+		n += 1 + l + sovMsg(uint64(l))
+	}
+	return n
+}
+
 func sovMsg(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
@@ -1647,6 +1878,7 @@ func (this *Cmd) String() string {
 	}
 	s := strings.Join([]string{`&Cmd{`,
 		`Opt:` + fmt.Sprintf("%v", this.Opt) + `,`,
+		`ReadMode:` + fmt.Sprintf("%v", this.ReadMode) + `,`,
 		`Key:` + fmt.Sprintf("%v", this.Key) + `,`,
 		`Value:` + fmt.Sprintf("%v", this.Value) + `,`,
 		`}`,
@@ -1700,6 +1932,18 @@ func (this *HeartbeatResp) String() string {
 		`From:` + fmt.Sprintf("%v", this.From) + `,`,
 		`Success:` + fmt.Sprintf("%v", this.Success) + `,`,
 		`LastLogIndex:` + fmt.Sprintf("%v", this.LastLogIndex) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *CmdResp) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&CmdResp{`,
+		`Res:` + fmt.Sprintf("%v", this.Res) + `,`,
+		`IsLeader:` + fmt.Sprintf("%v", this.IsLeader) + `,`,
+		`LeaderAddr:` + fmt.Sprintf("%v", this.LeaderAddr) + `,`,
 		`}`,
 	}, "")
 	return s
@@ -2201,6 +2445,25 @@ func (m *Cmd) Unmarshal(dAtA []byte) error {
 				}
 			}
 		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ReadMode", wireType)
+			}
+			m.ReadMode = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsg
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ReadMode |= Cmd_ReadMode(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Key", wireType)
 			}
@@ -2232,7 +2495,7 @@ func (m *Cmd) Unmarshal(dAtA []byte) error {
 			}
 			m.Key = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 3:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
 			}
@@ -2781,6 +3044,143 @@ func (m *HeartbeatResp) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMsg(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthMsg
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthMsg
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *CmdResp) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMsg
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: CmdResp: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: CmdResp: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Res", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsg
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMsg
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMsg
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Res = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IsLeader", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsg
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.IsLeader = bool(v != 0)
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LeaderAddr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsg
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMsg
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMsg
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.LeaderAddr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipMsg(dAtA[iNdEx:])

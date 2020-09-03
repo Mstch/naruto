@@ -35,9 +35,16 @@ message Cmd {
         Get = 0;
         Set = 1;
     }
+    enum ReadMode {
+        Default = 0;
+        Lease = 1;
+        ReadIndex = 2;
+        FollowerRead = 3;
+    }
     Opt opt = 1;
-    string key = 2;
-    string value = 3;
+    ReadMode readMode = 2;
+    string key = 3;
+    string value = 4;
 }
 
 message Log {
@@ -65,4 +72,10 @@ message HeartbeatResp {
     uint32 from = 2;
     bool success = 3;
     uint64 lastLogIndex = 4;
+}
+
+message CmdResp {
+    string res = 1;
+    bool isLeader = 2;
+    string leaderAddr = 3;
 }
