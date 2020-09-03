@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+message Cmd {
+    enum Opt {
+        Get = 0;
+        Set = 1;
+    }
+    Opt opt = 1;
+    string key = 2;
+    string value = 3;
+}
+
+message CmdResp {
+    string res = 1;
+    bool isLeader = 2;
+    string leaderAddr = 3;
+}
