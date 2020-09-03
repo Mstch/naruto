@@ -13,7 +13,7 @@ import (
 */
 
 type Server interface {
-	//will block
+	//not block
 	Serve(address string) error
 	RegHandler(name string, handler func(arg proto.Message) (res proto.Message), argId uint8) error
 }

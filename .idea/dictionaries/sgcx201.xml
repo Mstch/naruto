@@ -9,6 +9,7 @@
       <w>goio</w>
       <w>htimer</w>
       <w>ipnet</w>
+      <w>marshaler</w>
       <w>reloop</w>
       <w>rmax</w>
       <w>rmin</w>

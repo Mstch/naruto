@@ -1,4 +1,6 @@
+id: 1
 launch_size: 3
+client_port: 1011
 members:
   1: 'localhost:1001'
   2: 'localhost:1002'

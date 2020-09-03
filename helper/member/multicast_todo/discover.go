@@ -27,22 +27,22 @@
 //
 //func hereIam() {
 //	udpConn := getConn("255.255.255.255:" + strconv.Itoa(int(member.self.UPort)))
-//	buf := util.UInt32ToBytes(member.self.Port)
+//	sbuf := util.UInt32ToBytes(member.self.Port)
 //	for range member.discoverTicker.C {
-//		go func(buf []byte) {
-//			_, err := udpConn.Write(buf)
+//		go func(sbuf []byte) {
+//			_, err := udpConn.Write(sbuf)
 //			if err != nil {
 //				logger.Error("发送UDP广播包到%s失败", udpConn.RemoteAddr().String())
 //			}
-//		}(buf)
+//		}(sbuf)
 //	}
 //	udpConn.Close()
 //}
 //
 //func iKnowYouThere(addr string) {
 //	udpConn := getConn(addr)
-//	buf := util.Int32ToBytes(-1 * int32(member.self.Port))
-//	_, err := udpConn.Write(buf)
+//	sbuf := util.Int32ToBytes(-1 * int32(member.self.Port))
+//	_, err := udpConn.Write(sbuf)
 //	if err != nil {
 //		logger.Error("发送UDP响应包到%s失败", udpConn.RemoteAddr().String())
 //	}
@@ -57,13 +57,13 @@
 //	}
 //	defer pc.Close()
 //	for {
-//		buf := make([]byte, 8)
-//		n, addr, err := pc.ReadFrom(buf)
+//		sbuf := make([]byte, 8)
+//		n, addr, err := pc.ReadFrom(sbuf)
 //		if err != nil {
 //			panic(err)
 //		}
-//		go func(addr net.Addr, buf []byte, n int) {
-//			port := util.BytesToUInt32(buf[:n])
+//		go func(addr net.Addr, sbuf []byte, n int) {
+//			port := util.BytesToUInt32(sbuf[:n])
 //			ip := strings.Split(addr.String(), ":")[0]
 //			if _, isSelf := member.localIp[ip]; !isSelf {
 //				logger.Debug("收到来自%s的发现udp包:%d", ip, port)
@@ -85,6 +85,6 @@
 //					}
 //				}
 //			}
-//		}(addr, buf, n)
+//		}(addr, sbuf, n)
 //	}
 //}

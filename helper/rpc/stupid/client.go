@@ -16,7 +16,8 @@ type clientImpl struct {
 
 func NewClientImpl() *clientImpl {
 	return &clientImpl{
-		regLock: &sync.Mutex{},
+		regLock:  &sync.Mutex{},
+		handlers: make(map[string]*handler),
 	}
 }
 
@@ -40,7 +41,7 @@ func (c *clientImpl) Conn(conn net.Conn) error {
 	}
 	c.connected = true
 	c.conn = conn
-	go serveConn(c.handlers, conn)
+		go serveConn(c.handlers, conn)
 	return nil
 }
 
