@@ -25,14 +25,16 @@ var (
 	lenPool    = sync.Pool{New: func() interface{} {
 		return make([]byte, 4)
 	}}
-	bufPool = sync.Pool{New: func() interface{} {
+	BufPool = sync.Pool{New: func() interface{} {
 		return &sbuf.Buffer{}
 	}}
 )
 
 func serveConn(handlers map[string]*handler, conn net.Conn) {
+	sb := BufPool.Get().(*sbuf.Buffer)
+	lb := lenPool.Get().([]byte)
 	for {
-		name, msgBody, err := read(conn)
+		name, msgBody, err := read(sb, lb, conn)
 		if err != nil {
 			if err == goio.EOF {
 				logger.Info("%s close connection", conn.RemoteAddr())
@@ -61,21 +63,21 @@ func serveConn(handlers map[string]*handler, conn net.Conn) {
 			}
 		}(name, msgBody)
 	}
+	BufPool.Put(sb)
+	lenPool.Put(lb)
 }
 
-func read(conn net.Conn) (string, []byte, error) {
+func read(sb *sbuf.Buffer, lb []byte, conn net.Conn) (string, []byte, error) {
 	msg := &StupidMsg{}
 	var err error
 	if UseBufPool {
-		lenBytes := lenPool.Get().([]byte)
-		_, err = goio.ReadFull(conn, lenBytes)
+		_, err = goio.ReadFull(conn, lb)
 		if err != nil {
 			return "", nil, err
 		}
-		slen := int(util.BytesToInt32(lenBytes))
-		b := bufPool.Get().(*sbuf.Buffer)
-		b.Reset()
-		sbytes := b.Take(slen)
+		slen := int(util.BytesToInt32(lb))
+		sb.Reset()
+		sbytes := sb.Take(slen)
 		_, err = goio.ReadFull(conn, sbytes)
 		if err != nil {
 			return "", nil, err
@@ -84,8 +86,6 @@ func read(conn net.Conn) (string, []byte, error) {
 		if err != nil {
 			return "", nil, err
 		}
-		bufPool.Put(b)
-		lenPool.Put(lenBytes)
 	} else if UseRWPool {
 		reader := readerPool.Get().(*uint32Reader)
 		reader.r = conn
@@ -106,15 +106,17 @@ func write(conn net.Conn, name string, res proto.Message) error {
 	msg.Name = name
 	var err error
 	if UseBufPool {
-		b := bufPool.Get().(*sbuf.Buffer)
-		b.Reset()
+		b1 := BufPool.Get().(*sbuf.Buffer)
+		b1.Reset()
 		r := res.(marshaler)
-		bodyBytes := b.Take(r.Size())
+		bodyBytes := b1.Take(r.Size())
 		_, err = r.MarshalTo(bodyBytes)
 		if err != nil {
 			return err
 		}
 		msg.Body = bodyBytes
+		b := BufPool.Get().(*sbuf.Buffer)
+		b.Reset()
 		sbytes := b.Take(msg.Size() + 4)
 		_, err = msg.MarshalTo(sbytes[4:])
 		if err != nil {
@@ -125,7 +127,8 @@ func write(conn net.Conn, name string, res proto.Message) error {
 		if err != nil {
 			return err
 		}
-		bufPool.Put(b)
+		BufPool.Put(b)
+		BufPool.Put(b1)
 	} else {
 		msg.Body, err = proto.Marshal(res)
 		if err != nil {

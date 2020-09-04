@@ -9,6 +9,7 @@ import (
 
 type clientImpl struct {
 	connected bool
+
 	conn      net.Conn
 	regLock   *sync.Mutex
 	handlers  map[string]*handler
