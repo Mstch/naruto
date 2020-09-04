@@ -138,8 +138,10 @@ func (this *uint32Reader) Close() error {
 }
 
 type marshaler interface {
+	Size() int
 	MarshalTo(data []byte) (n int, err error)
 }
+
 func getSize(v interface{}) (int, bool) {
 	if sz, ok := v.(interface {
 		Size() (n int)

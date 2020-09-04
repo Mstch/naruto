@@ -3,6 +3,8 @@ package stupid
 import (
 	"encoding/binary"
 	"github.com/Mstch/naruto/helper/logger"
+	"github.com/Mstch/naruto/helper/sbuf"
+	"github.com/Mstch/naruto/helper/util"
 	"github.com/gogo/protobuf/io"
 	"github.com/gogo/protobuf/proto"
 	goio "io"
@@ -11,12 +13,20 @@ import (
 )
 
 var (
-	UsePool    = false
+	UseRWPool  = false
 	writerPool = sync.Pool{New: func() interface{} {
 		return NewUint32DelimitedWriter(nil, binary.BigEndian)
 	}}
 	readerPool = sync.Pool{New: func() interface{} {
 		return NewUint32DelimitedReader(nil, binary.BigEndian, 10*1000*1000)
+	}}
+
+	UseBufPool = false
+	lenPool    = sync.Pool{New: func() interface{} {
+		return make([]byte, 4)
+	}}
+	bufPool = sync.Pool{New: func() interface{} {
+		return &sbuf.Buffer{}
 	}}
 )
 
@@ -55,9 +65,28 @@ func serveConn(handlers map[string]*handler, conn net.Conn) {
 
 func read(conn net.Conn) (string, []byte, error) {
 	msg := &StupidMsg{}
-
 	var err error
-	if UsePool {
+	if UseBufPool {
+		lenBytes := lenPool.Get().([]byte)
+		_, err = goio.ReadFull(conn, lenBytes)
+		if err != nil {
+			return "", nil, err
+		}
+		slen := int(util.BytesToInt32(lenBytes))
+		b := bufPool.Get().(*sbuf.Buffer)
+		b.Reset()
+		sbytes := b.Take(slen)
+		_, err = goio.ReadFull(conn, sbytes)
+		if err != nil {
+			return "", nil, err
+		}
+		err = msg.Unmarshal(sbytes)
+		if err != nil {
+			return "", nil, err
+		}
+		bufPool.Put(b)
+		lenPool.Put(lenBytes)
+	} else if UseRWPool {
 		reader := readerPool.Get().(*uint32Reader)
 		reader.r = conn
 		err = reader.ReadMsg(msg)
@@ -76,19 +105,41 @@ func write(conn net.Conn, name string, res proto.Message) error {
 	msg := &StupidMsg{}
 	msg.Name = name
 	var err error
-	msg.Body, err = proto.Marshal(res)
-	if err != nil {
-		return err
-	}
-
-	if UsePool {
-		writer := writerPool.Get().(*uint32Writer)
-		writer.w = conn
-		err = writer.WriteMsg(msg)
-		writerPool.Put(writer)
+	if UseBufPool {
+		b := bufPool.Get().(*sbuf.Buffer)
+		b.Reset()
+		r := res.(marshaler)
+		bodyBytes := b.Take(r.Size())
+		_, err = r.MarshalTo(bodyBytes)
+		if err != nil {
+			return err
+		}
+		msg.Body = bodyBytes
+		sbytes := b.Take(msg.Size() + 4)
+		_, err = msg.MarshalTo(sbytes[4:])
+		if err != nil {
+			return err
+		}
+		util.WriteInt32ToBytes(int32(msg.Size()), sbytes[:4])
+		_, err = conn.Write(sbytes)
+		if err != nil {
+			return err
+		}
+		bufPool.Put(b)
 	} else {
-		writer := io.NewUint32DelimitedWriter(conn, binary.BigEndian)
-		err = writer.WriteMsg(msg)
+		msg.Body, err = proto.Marshal(res)
+		if err != nil {
+			return err
+		}
+		if UseRWPool {
+			writer := writerPool.Get().(*uint32Writer)
+			writer.w = conn
+			err = writer.WriteMsg(msg)
+			writerPool.Put(writer)
+		} else {
+			writer := io.NewUint32DelimitedWriter(conn, binary.BigEndian)
+			err = writer.WriteMsg(msg)
+		}
 	}
 	return err
 }

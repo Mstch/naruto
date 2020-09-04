@@ -4,7 +4,6 @@ import (
 	"github.com/Mstch/naruto/helper/rpc"
 	"github.com/Mstch/naruto/helper/rpc/stupid"
 	"github.com/gogo/protobuf/proto"
-	"log"
 	"net"
 	"sync"
 	"testing"
@@ -12,12 +11,11 @@ import (
 
 var (
 	stupidServerInit = &sync.Once{}
-	httpServerInit   = &sync.Once{}
 )
 
-func BenchmarkStupidRpc(b *testing.B) {
+func BenchmarkBufPoolStupidRpc(b *testing.B) {
 	b.N = 100 * b.N
-	stupid.UsePool = true
+	stupid.UseBufPool = true
 	buf := make([]byte, 1024)
 	for i, _ := range buf {
 		buf[i] = 1
@@ -63,10 +61,58 @@ func BenchmarkStupidRpc(b *testing.B) {
 
 	waiter.Wait()
 }
+func BenchmarkStupidRWPooledRpc(b *testing.B) {
+	b.N = 100 * b.N
+	stupid.UseBufPool = false
+	stupid.UseRWPool = true
+	buf := make([]byte, 1024)
+	for i, _ := range buf {
+		buf[i] = 1
+	}
+	content := string(buf)
+	stupidServerInit.Do(func() {
+		register := rpc.DefaultRegister()
+		register.RegMessageFactory(1, false, func() proto.Message {
+			return &Msg{}
+		})
+		server := rpc.DefaultServer()
+		err := server.Serve(":8739")
+		if err != nil {
+			panic(err)
+		}
+		err = server.RegHandler("Test", func(arg proto.Message) (res proto.Message) {
+			return &Msg{Content: content}
+		}, 1)
+	})
+	client := rpc.NewDefaultClient()
+	conn, err := net.Dial("tcp", "localhost:8739")
+	if err != nil {
+		panic(err)
+	}
+	err = client.Conn(conn)
+	if err != nil {
+		panic(err)
+	}
+	waiter := &sync.WaitGroup{}
+	waiter.Add(b.N)
+	client.RegHandler("Test", func(arg proto.Message) {
+		waiter.Done()
+	}, 1)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		err := client.Notify("Test", &Msg{
+			Content: content,
+		})
+		if err != nil {
+			panic(err)
+		}
+	}
+	waiter.Wait()
+}
 func BenchmarkStupidUnPooledRpc(b *testing.B) {
 	b.N = 100 * b.N
-	log.Println("unpool", b.N)
-	stupid.UsePool = false
+	stupid.UseBufPool = false
+	stupid.UseRWPool = false
 	buf := make([]byte, 1024)
 	for i, _ := range buf {
 		buf[i] = 1
