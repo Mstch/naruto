@@ -25,7 +25,16 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type Msg struct {
-	Content string `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
+	Content   string   `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
+	Content2  string   `protobuf:"bytes,2,opt,name=content2,proto3" json:"content2,omitempty"`
+	Content3  string   `protobuf:"bytes,3,opt,name=content3,proto3" json:"content3,omitempty"`
+	Content4  string   `protobuf:"bytes,4,opt,name=content4,proto3" json:"content4,omitempty"`
+	Content5  string   `protobuf:"bytes,5,opt,name=content5,proto3" json:"content5,omitempty"`
+	Content6  string   `protobuf:"bytes,6,opt,name=content6,proto3" json:"content6,omitempty"`
+	Content7  string   `protobuf:"bytes,7,opt,name=content7,proto3" json:"content7,omitempty"`
+	Content8  string   `protobuf:"bytes,8,opt,name=content8,proto3" json:"content8,omitempty"`
+	Content9  string   `protobuf:"bytes,9,opt,name=content9,proto3" json:"content9,omitempty"`
+	Cont0Nt19 []string `protobuf:"bytes,10,rep,name=cont0nt19,proto3" json:"cont0nt19,omitempty"`
 }
 
 func (m *Msg) Reset()      { *m = Msg{} }
@@ -67,6 +76,69 @@ func (m *Msg) GetContent() string {
 	return ""
 }
 
+func (m *Msg) GetContent2() string {
+	if m != nil {
+		return m.Content2
+	}
+	return ""
+}
+
+func (m *Msg) GetContent3() string {
+	if m != nil {
+		return m.Content3
+	}
+	return ""
+}
+
+func (m *Msg) GetContent4() string {
+	if m != nil {
+		return m.Content4
+	}
+	return ""
+}
+
+func (m *Msg) GetContent5() string {
+	if m != nil {
+		return m.Content5
+	}
+	return ""
+}
+
+func (m *Msg) GetContent6() string {
+	if m != nil {
+		return m.Content6
+	}
+	return ""
+}
+
+func (m *Msg) GetContent7() string {
+	if m != nil {
+		return m.Content7
+	}
+	return ""
+}
+
+func (m *Msg) GetContent8() string {
+	if m != nil {
+		return m.Content8
+	}
+	return ""
+}
+
+func (m *Msg) GetContent9() string {
+	if m != nil {
+		return m.Content9
+	}
+	return ""
+}
+
+func (m *Msg) GetCont0Nt19() []string {
+	if m != nil {
+		return m.Cont0Nt19
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*Msg)(nil), "Msg")
 }
@@ -74,15 +146,21 @@ func init() {
 func init() { proto.RegisterFile("test.proto", fileDescriptor_c161fcfdc0c3ff1e) }
 
 var fileDescriptor_c161fcfdc0c3ff1e = []byte{
-	// 125 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2a, 0x49, 0x2d, 0x2e,
-	0xd1, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x57, 0x92, 0xe7, 0x62, 0xf6, 0x2d, 0x4e, 0x17, 0x92, 0xe0,
-	0x62, 0x4f, 0xce, 0xcf, 0x2b, 0x49, 0xcd, 0x2b, 0x91, 0x60, 0x54, 0x60, 0xd4, 0xe0, 0x0c, 0x82,
-	0x71, 0x9d, 0x4c, 0x2e, 0x3c, 0x94, 0x63, 0xb8, 0xf1, 0x50, 0x8e, 0xe1, 0xc3, 0x43, 0x39, 0xc6,
-	0x86, 0x47, 0x72, 0x8c, 0x2b, 0x1e, 0xc9, 0x31, 0x9e, 0x78, 0x24, 0xc7, 0x78, 0xe1, 0x91, 0x1c,
-	0xe3, 0x83, 0x47, 0x72, 0x8c, 0x2f, 0x1e, 0xc9, 0x31, 0x7c, 0x78, 0x24, 0xc7, 0x38, 0xe1, 0xb1,
-	0x1c, 0xc3, 0x85, 0xc7, 0x72, 0x0c, 0x37, 0x1e, 0xcb, 0x31, 0x24, 0xb1, 0x81, 0x4d, 0x37, 0x06,
-	0x04, 0x00, 0x00, 0xff, 0xff, 0x88, 0xdf, 0xe1, 0x76, 0x6b, 0x00, 0x00, 0x00,
+	// 212 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x54, 0xd0, 0x3b, 0x6e, 0x83, 0x40,
+	0x10, 0xc6, 0xf1, 0x1d, 0x48, 0x80, 0xdd, 0x92, 0x6a, 0x14, 0x45, 0x23, 0x94, 0x8a, 0x2a, 0x4a,
+	0xc2, 0xbb, 0x4d, 0xef, 0x86, 0x23, 0xd8, 0x42, 0xee, 0xc0, 0x32, 0x7b, 0x00, 0x1f, 0xc1, 0x17,
+	0x70, 0xef, 0xa3, 0xb8, 0xa4, 0xa4, 0x34, 0x4b, 0xe3, 0x92, 0x23, 0x58, 0x46, 0x7e, 0xec, 0x76,
+	0xdf, 0x7f, 0x7e, 0xdd, 0x08, 0x21, 0xab, 0x56, 0x7e, 0x6f, 0xb6, 0x8d, 0x6c, 0xbe, 0x0e, 0x96,
+	0xb0, 0x17, 0xed, 0xda, 0x47, 0xe1, 0xae, 0x9a, 0x5a, 0x56, 0xb5, 0x44, 0x08, 0x20, 0xe4, 0xe5,
+	0x23, 0xfd, 0x0f, 0xe1, 0xdd, 0xe7, 0x1f, 0x5a, 0x33, 0x3d, 0x5b, 0xb3, 0x08, 0x6d, 0xc3, 0x22,
+	0xcd, 0x62, 0x7c, 0x33, 0x2c, 0xd6, 0x2c, 0xc1, 0x77, 0xc3, 0x12, 0xcd, 0x52, 0x74, 0x0c, 0x4b,
+	0x35, 0xcb, 0xd0, 0x35, 0x2c, 0xd3, 0x2c, 0x47, 0xcf, 0xb0, 0x5c, 0xb3, 0x02, 0xb9, 0x61, 0x85,
+	0xff, 0x29, 0xf8, 0x6d, 0xff, 0xd4, 0xf2, 0xb7, 0x40, 0x11, 0xd8, 0x21, 0x2f, 0x5f, 0x87, 0xff,
+	0xb8, 0x1b, 0x88, 0xf5, 0x03, 0xb1, 0x69, 0x20, 0xd8, 0x29, 0x82, 0xa3, 0x22, 0x38, 0x29, 0x82,
+	0x4e, 0x11, 0x9c, 0x15, 0xc1, 0x45, 0x11, 0x9b, 0x14, 0xc1, 0x7e, 0x24, 0xd6, 0x8d, 0xc4, 0xfa,
+	0x91, 0xd8, 0xd2, 0x99, 0x9f, 0x1b, 0x5d, 0x03, 0x00, 0x00, 0xff, 0xff, 0x7f, 0xaa, 0x46, 0x11,
+	0x6a, 0x01, 0x00, 0x00,
 }
 
 func (this *Msg) Equal(that interface{}) bool {
@@ -107,15 +185,56 @@ func (this *Msg) Equal(that interface{}) bool {
 	if this.Content != that1.Content {
 		return false
 	}
+	if this.Content2 != that1.Content2 {
+		return false
+	}
+	if this.Content3 != that1.Content3 {
+		return false
+	}
+	if this.Content4 != that1.Content4 {
+		return false
+	}
+	if this.Content5 != that1.Content5 {
+		return false
+	}
+	if this.Content6 != that1.Content6 {
+		return false
+	}
+	if this.Content7 != that1.Content7 {
+		return false
+	}
+	if this.Content8 != that1.Content8 {
+		return false
+	}
+	if this.Content9 != that1.Content9 {
+		return false
+	}
+	if len(this.Cont0Nt19) != len(that1.Cont0Nt19) {
+		return false
+	}
+	for i := range this.Cont0Nt19 {
+		if this.Cont0Nt19[i] != that1.Cont0Nt19[i] {
+			return false
+		}
+	}
 	return true
 }
 func (this *Msg) GoString() string {
 	if this == nil {
 		return "nil"
 	}
-	s := make([]string, 0, 5)
+	s := make([]string, 0, 14)
 	s = append(s, "&test.Msg{")
 	s = append(s, "Content: "+fmt.Sprintf("%#v", this.Content)+",\n")
+	s = append(s, "Content2: "+fmt.Sprintf("%#v", this.Content2)+",\n")
+	s = append(s, "Content3: "+fmt.Sprintf("%#v", this.Content3)+",\n")
+	s = append(s, "Content4: "+fmt.Sprintf("%#v", this.Content4)+",\n")
+	s = append(s, "Content5: "+fmt.Sprintf("%#v", this.Content5)+",\n")
+	s = append(s, "Content6: "+fmt.Sprintf("%#v", this.Content6)+",\n")
+	s = append(s, "Content7: "+fmt.Sprintf("%#v", this.Content7)+",\n")
+	s = append(s, "Content8: "+fmt.Sprintf("%#v", this.Content8)+",\n")
+	s = append(s, "Content9: "+fmt.Sprintf("%#v", this.Content9)+",\n")
+	s = append(s, "Cont0Nt19: "+fmt.Sprintf("%#v", this.Cont0Nt19)+",\n")
 	s = append(s, "}")
 	return strings.Join(s, "")
 }
@@ -147,6 +266,71 @@ func (m *Msg) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.Cont0Nt19) > 0 {
+		for iNdEx := len(m.Cont0Nt19) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Cont0Nt19[iNdEx])
+			copy(dAtA[i:], m.Cont0Nt19[iNdEx])
+			i = encodeVarintTest(dAtA, i, uint64(len(m.Cont0Nt19[iNdEx])))
+			i--
+			dAtA[i] = 0x52
+		}
+	}
+	if len(m.Content9) > 0 {
+		i -= len(m.Content9)
+		copy(dAtA[i:], m.Content9)
+		i = encodeVarintTest(dAtA, i, uint64(len(m.Content9)))
+		i--
+		dAtA[i] = 0x4a
+	}
+	if len(m.Content8) > 0 {
+		i -= len(m.Content8)
+		copy(dAtA[i:], m.Content8)
+		i = encodeVarintTest(dAtA, i, uint64(len(m.Content8)))
+		i--
+		dAtA[i] = 0x42
+	}
+	if len(m.Content7) > 0 {
+		i -= len(m.Content7)
+		copy(dAtA[i:], m.Content7)
+		i = encodeVarintTest(dAtA, i, uint64(len(m.Content7)))
+		i--
+		dAtA[i] = 0x3a
+	}
+	if len(m.Content6) > 0 {
+		i -= len(m.Content6)
+		copy(dAtA[i:], m.Content6)
+		i = encodeVarintTest(dAtA, i, uint64(len(m.Content6)))
+		i--
+		dAtA[i] = 0x32
+	}
+	if len(m.Content5) > 0 {
+		i -= len(m.Content5)
+		copy(dAtA[i:], m.Content5)
+		i = encodeVarintTest(dAtA, i, uint64(len(m.Content5)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if len(m.Content4) > 0 {
+		i -= len(m.Content4)
+		copy(dAtA[i:], m.Content4)
+		i = encodeVarintTest(dAtA, i, uint64(len(m.Content4)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.Content3) > 0 {
+		i -= len(m.Content3)
+		copy(dAtA[i:], m.Content3)
+		i = encodeVarintTest(dAtA, i, uint64(len(m.Content3)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Content2) > 0 {
+		i -= len(m.Content2)
+		copy(dAtA[i:], m.Content2)
+		i = encodeVarintTest(dAtA, i, uint64(len(m.Content2)))
+		i--
+		dAtA[i] = 0x12
+	}
 	if len(m.Content) > 0 {
 		i -= len(m.Content)
 		copy(dAtA[i:], m.Content)
@@ -178,6 +362,44 @@ func (m *Msg) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTest(uint64(l))
 	}
+	l = len(m.Content2)
+	if l > 0 {
+		n += 1 + l + sovTest(uint64(l))
+	}
+	l = len(m.Content3)
+	if l > 0 {
+		n += 1 + l + sovTest(uint64(l))
+	}
+	l = len(m.Content4)
+	if l > 0 {
+		n += 1 + l + sovTest(uint64(l))
+	}
+	l = len(m.Content5)
+	if l > 0 {
+		n += 1 + l + sovTest(uint64(l))
+	}
+	l = len(m.Content6)
+	if l > 0 {
+		n += 1 + l + sovTest(uint64(l))
+	}
+	l = len(m.Content7)
+	if l > 0 {
+		n += 1 + l + sovTest(uint64(l))
+	}
+	l = len(m.Content8)
+	if l > 0 {
+		n += 1 + l + sovTest(uint64(l))
+	}
+	l = len(m.Content9)
+	if l > 0 {
+		n += 1 + l + sovTest(uint64(l))
+	}
+	if len(m.Cont0Nt19) > 0 {
+		for _, s := range m.Cont0Nt19 {
+			l = len(s)
+			n += 1 + l + sovTest(uint64(l))
+		}
+	}
 	return n
 }
 
@@ -193,6 +415,15 @@ func (this *Msg) String() string {
 	}
 	s := strings.Join([]string{`&Msg{`,
 		`Content:` + fmt.Sprintf("%v", this.Content) + `,`,
+		`Content2:` + fmt.Sprintf("%v", this.Content2) + `,`,
+		`Content3:` + fmt.Sprintf("%v", this.Content3) + `,`,
+		`Content4:` + fmt.Sprintf("%v", this.Content4) + `,`,
+		`Content5:` + fmt.Sprintf("%v", this.Content5) + `,`,
+		`Content6:` + fmt.Sprintf("%v", this.Content6) + `,`,
+		`Content7:` + fmt.Sprintf("%v", this.Content7) + `,`,
+		`Content8:` + fmt.Sprintf("%v", this.Content8) + `,`,
+		`Content9:` + fmt.Sprintf("%v", this.Content9) + `,`,
+		`Cont0Nt19:` + fmt.Sprintf("%v", this.Cont0Nt19) + `,`,
 		`}`,
 	}, "")
 	return s
@@ -265,6 +496,294 @@ func (m *Msg) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Content = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Content2", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTest
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTest
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTest
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Content2 = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Content3", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTest
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTest
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTest
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Content3 = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Content4", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTest
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTest
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTest
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Content4 = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Content5", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTest
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTest
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTest
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Content5 = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Content6", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTest
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTest
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTest
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Content6 = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Content7", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTest
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTest
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTest
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Content7 = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Content8", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTest
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTest
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTest
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Content8 = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 9:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Content9", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTest
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTest
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTest
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Content9 = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 10:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Cont0Nt19", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTest
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTest
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTest
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Cont0Nt19 = append(m.Cont0Nt19, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

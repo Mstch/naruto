@@ -2,6 +2,7 @@ package stupid
 
 import (
 	"encoding/binary"
+	"errors"
 	"github.com/Mstch/naruto/helper/logger"
 	"github.com/Mstch/naruto/helper/sbuf"
 	"github.com/Mstch/naruto/helper/util"
@@ -26,13 +27,15 @@ var (
 		return make([]byte, 4)
 	}}
 	BufPool = sync.Pool{New: func() interface{} {
-		return &sbuf.Buffer{}
+		return sbuf.NewTree()
 	}}
 )
 
 func serveConn(handlers map[string]*handler, conn net.Conn) {
-	sb := BufPool.Get().(*sbuf.Buffer)
+	sb := BufPool.Get().(*sbuf.BufferTree)
 	lb := lenPool.Get().([]byte)
+	var lastName string
+	var lastBody []byte
 	for {
 		name, msgBody, err := read(sb, lb, conn)
 		if err != nil {
@@ -43,12 +46,16 @@ func serveConn(handlers map[string]*handler, conn net.Conn) {
 			}
 			break
 		}
+		lastName = name
+		lastBody = msgBody
+		if lastName != "Test" {
+			panic(lastBody)
+		}
 		go func(name string, msgBody []byte) {
 			if handler, ok := handlers[name]; ok {
 				factory := MsgFactoryRegisterInstance().factoryMap[handler.argId]
-				var arg proto.Message
-				arg = factory.produce()
-				err := proto.Unmarshal(msgBody, arg)
+				arg := factory.produce()
+				_, err := arg.(marshaler).MarshalTo(msgBody)
 				if err != nil {
 					logger.Error("Unmarshal failed:%s", err)
 					return
@@ -62,74 +69,75 @@ func serveConn(handlers map[string]*handler, conn net.Conn) {
 				}
 			}
 		}(name, msgBody)
+
 	}
 	BufPool.Put(sb)
 	lenPool.Put(lb)
 }
 
-func read(sb *sbuf.Buffer, lb []byte, conn net.Conn) (string, []byte, error) {
-	msg := &StupidMsg{}
+func read(sb *sbuf.BufferTree, lb []byte, conn net.Conn) (string, []byte, error) {
 	var err error
 	if UseBufPool {
-		_, err = goio.ReadFull(conn, lb)
+		_, err := goio.ReadFull(conn, lb)
 		if err != nil {
 			return "", nil, err
 		}
-		slen := int(util.BytesToInt32(lb))
-		sb.Reset()
-		sbytes := sb.Take(slen)
-		_, err = goio.ReadFull(conn, sbytes)
+		nLen := lb[0]
+		lb[0] = 0
+		msgLen := util.BytesToInt32(lb)
+		if msgLen != 1645 {
+			panic(msgLen)
+		}
+		msgBytes := sb.Take(int(msgLen + int32(nLen)))
+		_, err = goio.ReadFull(conn, msgBytes)
 		if err != nil {
 			return "", nil, err
 		}
-		err = msg.Unmarshal(sbytes)
-		if err != nil {
-			return "", nil, err
-		}
-	} else if UseRWPool {
-		reader := readerPool.Get().(*uint32Reader)
-		reader.r = conn
-		err = reader.ReadMsg(msg)
-		readerPool.Put(reader)
+		return string(msgBytes[:nLen]), msgBytes[nLen:], nil
 	} else {
-		reader := io.NewUint32DelimitedReader(conn, binary.BigEndian, 10*1000*1000)
-		err = reader.ReadMsg(msg)
+		msg := &StupidMsg{}
+		if UseRWPool {
+			reader := readerPool.Get().(*uint32Reader)
+			reader.r = conn
+			err = reader.ReadMsg(msg)
+			readerPool.Put(reader)
+		} else {
+			reader := io.NewUint32DelimitedReader(conn, binary.BigEndian, 10*1000*1000)
+			err = reader.ReadMsg(msg)
+		}
+		if err != nil {
+			return "", nil, err
+		}
+		return msg.GetName(), msg.GetBody(), nil
 	}
-	if err != nil {
-		return "", nil, err
-	}
-	return msg.GetName(), msg.GetBody(), nil
 }
 
 func write(conn net.Conn, name string, res proto.Message) error {
-	msg := &StupidMsg{}
-	msg.Name = name
 	var err error
 	if UseBufPool {
-		b1 := BufPool.Get().(*sbuf.Buffer)
-		b1.Reset()
 		r := res.(marshaler)
-		bodyBytes := b1.Take(r.Size())
-		_, err = r.MarshalTo(bodyBytes)
+		rLen := r.Size()
+		nLen := len(name)
+		if rLen > 0xffffff {
+			return errors.New("msg to write too large")
+		}
+		b := BufPool.Get().(*sbuf.BufferTree)
+		msgBytes := b.Take(4 + nLen + rLen)
+		util.WriteUInt32ToBytes(uint32(rLen), msgBytes)
+		msgBytes[0] = byte(nLen)
+		copy(msgBytes[4:nLen+4], name)
+		_, err = r.MarshalTo(msgBytes[nLen+4:])
 		if err != nil {
 			return err
 		}
-		msg.Body = bodyBytes
-		b := BufPool.Get().(*sbuf.Buffer)
-		b.Reset()
-		sbytes := b.Take(msg.Size() + 4)
-		_, err = msg.MarshalTo(sbytes[4:])
-		if err != nil {
-			return err
-		}
-		util.WriteInt32ToBytes(int32(msg.Size()), sbytes[:4])
-		_, err = conn.Write(sbytes)
+		_, err = conn.Write(msgBytes)
 		if err != nil {
 			return err
 		}
 		BufPool.Put(b)
-		BufPool.Put(b1)
 	} else {
+		msg := &StupidMsg{}
+		msg.Name = name
 		msg.Body, err = proto.Marshal(res)
 		if err != nil {
 			return err
