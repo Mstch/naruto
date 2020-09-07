@@ -17,7 +17,7 @@ var (
 		return make([]byte, 4)
 	}}
 	bufPool = sync.Pool{New: func() interface{} {
-		return &sbuf.BufferTree{}
+		return &sbuf.TreeBuffer{}
 	}}
 )
 
@@ -36,7 +36,7 @@ func TestWrite(t *testing.T) {
 					Term:         2,
 					LeaderCommit: 1,
 				}
-				b := bufPool.Get().(*sbuf.BufferTree)
+				b := bufPool.Get().(*sbuf.TreeBuffer)
 				//b.Reset()
 				bodyBytes := b.Take(m.Size())
 				l, err := m.MarshalTo(bodyBytes)
@@ -88,7 +88,7 @@ func TestRead(t *testing.T) {
 					panic("lenbytes error")
 				}
 				slen := int(util.BytesToInt32(lenBytes))
-				b := bufPool.Get().(*sbuf.BufferTree)
+				b := bufPool.Get().(*sbuf.TreeBuffer)
 				//b.Reset()
 				sbytes := b.Take(slen)
 				_, err = conn.Read(sbytes)

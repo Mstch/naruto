@@ -16,6 +16,20 @@ type factory struct {
 	usePool bool
 }
 
+func (f *factory) take() proto.Message {
+	if f.usePool {
+		return f.pool.Get().(proto.Message)
+	} else {
+		return f.produce()
+	}
+}
+
+func (f *factory) release(pb proto.Message) {
+	if f.usePool {
+		f.pool.Put(pb)
+	}
+}
+
 type msgFactoryRegister struct {
 	factoryMap map[uint8]*factory
 }

@@ -32,10 +32,8 @@ var (
 )
 
 func serveConn(handlers map[string]*handler, conn net.Conn) {
-	sb := BufPool.Get().(*sbuf.BufferTree)
+	sb := BufPool.Get().(*sbuf.TreeBuffer)
 	lb := lenPool.Get().([]byte)
-	var lastName string
-	var lastBody []byte
 	for {
 		name, msgBody, err := read(sb, lb, conn)
 		if err != nil {
@@ -46,27 +44,25 @@ func serveConn(handlers map[string]*handler, conn net.Conn) {
 			}
 			break
 		}
-		lastName = name
-		lastBody = msgBody
-		if lastName != "Test" {
-			panic(lastBody)
-		}
 		go func(name string, msgBody []byte) {
 			if handler, ok := handlers[name]; ok {
 				factory := MsgFactoryRegisterInstance().factoryMap[handler.argId]
 				arg := factory.produce()
-				_, err := arg.(marshaler).MarshalTo(msgBody)
+				err = arg.(pb).Unmarshal(msgBody)
 				if err != nil {
+					factory.release(arg)
 					logger.Error("Unmarshal failed:%s", err)
 					return
 				}
 				resPb := handlers[name].handleFunc(arg)
+				factory.release(arg)
 				if resPb != nil {
 					err = write(conn, name, resPb)
 					if err != nil {
 						logger.Error("error when response :%s", err)
 					}
 				}
+
 			}
 		}(name, msgBody)
 
@@ -75,7 +71,7 @@ func serveConn(handlers map[string]*handler, conn net.Conn) {
 	lenPool.Put(lb)
 }
 
-func read(sb *sbuf.BufferTree, lb []byte, conn net.Conn) (string, []byte, error) {
+func read(sb *sbuf.TreeBuffer, lb []byte, conn net.Conn) (string, []byte, error) {
 	var err error
 	if UseBufPool {
 		_, err := goio.ReadFull(conn, lb)
@@ -85,9 +81,6 @@ func read(sb *sbuf.BufferTree, lb []byte, conn net.Conn) (string, []byte, error)
 		nLen := lb[0]
 		lb[0] = 0
 		msgLen := util.BytesToInt32(lb)
-		if msgLen != 1645 {
-			panic(msgLen)
-		}
 		msgBytes := sb.Take(int(msgLen + int32(nLen)))
 		_, err = goio.ReadFull(conn, msgBytes)
 		if err != nil {
@@ -115,13 +108,13 @@ func read(sb *sbuf.BufferTree, lb []byte, conn net.Conn) (string, []byte, error)
 func write(conn net.Conn, name string, res proto.Message) error {
 	var err error
 	if UseBufPool {
-		r := res.(marshaler)
+		r := res.(pb)
 		rLen := r.Size()
 		nLen := len(name)
 		if rLen > 0xffffff {
 			return errors.New("msg to write too large")
 		}
-		b := BufPool.Get().(*sbuf.BufferTree)
+		b := BufPool.Get().(*sbuf.TreeBuffer)
 		msgBytes := b.Take(4 + nLen + rLen)
 		util.WriteUInt32ToBytes(uint32(rLen), msgBytes)
 		msgBytes[0] = byte(nLen)

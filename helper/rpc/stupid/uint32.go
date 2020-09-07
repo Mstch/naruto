@@ -68,7 +68,7 @@ func (this *uint32Writer) writeFallback(msg proto.Message) error {
 }
 
 func (this *uint32Writer) WriteMsg(msg proto.Message) error {
-	m, ok := msg.(marshaler)
+	m, ok := msg.(pb)
 	if !ok {
 		return this.writeFallback(msg)
 	}
@@ -137,9 +137,10 @@ func (this *uint32Reader) Close() error {
 	return nil
 }
 
-type marshaler interface {
+type pb interface {
 	Size() int
 	MarshalTo(data []byte) (n int, err error)
+	Unmarshal(data []byte) error
 }
 
 func getSize(v interface{}) (int, bool) {
