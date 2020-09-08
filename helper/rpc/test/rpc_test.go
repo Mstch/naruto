@@ -9,30 +9,43 @@ import (
 	stdrpc "net/rpc"
 	"sync"
 	"testing"
+	"time"
+	_ "unsafe"
 )
 
 var (
 	stupidServerInit = &sync.Once{}
 	stdServerInit    = &sync.Once{}
-	testMsg          = &msg.AppendReq{
-		Id:           1,
-		Term:         2,
-		PrevLogIndex: 3,
-		PrevLogTerm:  4,
-		LeaderCommit: 5,
-		Logs: []*msg.Log{{
-			Term:  6,
-			Index: 7,
-			Cmd: &msg.Cmd{
-				Opt:   msg.Get,
-				Key:   "get",
-				Value: "0",
-			},
-		}},
-	}
+	testMsg          = make([]*msg.AppendReq, 10)
+	Delay            time.Duration
 )
 
-func notify(w *sync.WaitGroup, n int) {
+func init() {
+	for i := range testMsg {
+		m := &msg.AppendReq{}
+		m.LeaderCommit = uint64(i)
+		m.PrevLogTerm = uint32(i)
+		m.Term = uint32(i)
+		for j := 0; j < i; j++ {
+			m.Logs = append(m.Logs, &msg.Log{
+				Cmd: &msg.Cmd{
+					Opt:      msg.Get,
+					ReadMode: msg.Lease,
+					Key:      "Set",
+					Value:    "v",
+				},
+				Term:  uint32(i),
+				Index: uint64(i),
+			})
+		}
+	}
+}
+
+// Uint32 returns a lock free uint32 value.
+//go:linkname fastrandn runtime.fastrandn
+func fastrandn(n uint32) uint32
+
+func notify(w *sync.WaitGroup, n int, b *testing.B) {
 	client := rpc.NewDefaultClient()
 	conn, err := net.Dial("tcp", "localhost:8739")
 	if err != nil {
@@ -46,14 +59,18 @@ func notify(w *sync.WaitGroup, n int) {
 		w.Done()
 	}, 1)
 	for i := 0; i < n; i++ {
-		err := client.Notify("Test", testMsg)
+		if Delay > 0 {
+			time.Sleep(Delay)
+		}
+		err := client.Notify("Test", testMsg[int(fastrandn(10))])
 		if err != nil {
 			panic(err)
 		}
 	}
 }
 
-func BenchmarkBufPoolStupidRpc(b *testing.B) {
+func BenchmarkBufPool200StupidRpc(b *testing.B) {
+	Delay = 200 * time.Microsecond
 	stupid.UseBufPool = true
 	stupidServerInit.Do(func() {
 		register := rpc.DefaultRegister()
@@ -66,7 +83,7 @@ func BenchmarkBufPoolStupidRpc(b *testing.B) {
 			panic(err)
 		}
 		err = server.RegHandler("Test", func(arg proto.Message) (res proto.Message) {
-			return testMsg
+			return testMsg[int(fastrandn(10))]
 		}, 1)
 	})
 	b.ResetTimer()
@@ -76,15 +93,15 @@ func BenchmarkBufPoolStupidRpc(b *testing.B) {
 	mod := b.N - div*100
 	if div < 100 {
 		for i := 0; i < div; i++ {
-			go notify(waiter, 100)
+			go notify(waiter, 100, b)
 		}
 	} else {
 		for i := 0; i < 100; i++ {
-			go notify(waiter, div)
+			go notify(waiter, div, b)
 		}
 	}
 	if mod > 0 {
-		go notify(waiter, mod)
+		go notify(waiter, mod, b)
 	}
 	waiter.Wait()
 	//b.StopTimer()
@@ -102,13 +119,12 @@ func BenchmarkBufPoolStupidRpc(b *testing.B) {
 	//}
 	//log.Println("count:", count, "min", min)
 }
-func BenchmarkStupidRWPooledRpc(b *testing.B) {
-
-	stupid.UseBufPool = false
-	stupid.UseRWPool = true
+func BenchmarkBufPool500StupidRpc(b *testing.B) {
+	Delay = 500 * time.Microsecond
+	stupid.UseBufPool = true
 	stupidServerInit.Do(func() {
 		register := rpc.DefaultRegister()
-		register.RegMessageFactory(1, false, func() proto.Message {
+		register.RegMessageFactory(1, true, func() proto.Message {
 			return &msg.AppendReq{}
 		})
 		server := rpc.DefaultServer()
@@ -117,7 +133,7 @@ func BenchmarkStupidRWPooledRpc(b *testing.B) {
 			panic(err)
 		}
 		err = server.RegHandler("Test", func(arg proto.Message) (res proto.Message) {
-			return testMsg
+			return testMsg[int(fastrandn(10))]
 		}, 1)
 	})
 	b.ResetTimer()
@@ -127,54 +143,31 @@ func BenchmarkStupidRWPooledRpc(b *testing.B) {
 	mod := b.N - div*100
 	if div < 100 {
 		for i := 0; i < div; i++ {
-			go notify(waiter, 100)
+			go notify(waiter, 100, b)
 		}
 	} else {
 		for i := 0; i < 100; i++ {
-			go notify(waiter, div)
+			go notify(waiter, div, b)
 		}
 	}
 	if mod > 0 {
-		go notify(waiter, mod)
+		go notify(waiter, mod, b)
 	}
 	waiter.Wait()
-}
-func BenchmarkStupidUnPooledRpc(b *testing.B) {
-
-	stupid.UseBufPool = false
-	stupid.UseRWPool = false
-	stupidServerInit.Do(func() {
-		register := rpc.DefaultRegister()
-		register.RegMessageFactory(1, false, func() proto.Message {
-			return &msg.AppendReq{}
-		})
-		server := rpc.DefaultServer()
-		err := server.Serve(":8739")
-		if err != nil {
-			panic(err)
-		}
-		err = server.RegHandler("Test", func(arg proto.Message) (res proto.Message) {
-			return testMsg
-		}, 1)
-	})
-	b.ResetTimer()
-	waiter := &sync.WaitGroup{}
-	waiter.Add(b.N)
-	div := b.N / 100
-	mod := b.N - div*100
-	if div < 100 {
-		for i := 0; i < div; i++ {
-			go notify(waiter, 100)
-		}
-	} else {
-		for i := 0; i < 100; i++ {
-			go notify(waiter, div)
-		}
-	}
-	if mod > 0 {
-		go notify(waiter, mod)
-	}
-	waiter.Wait()
+	//b.StopTimer()
+	//min := math.MaxInt32
+	//count := 0
+	//for {
+	//	sb := stupid.BufPool.Get().(*sbuf.Buffer)
+	//	if sb.Size() == 0 {
+	//		break
+	//	}
+	//	if sb.Size() < min {
+	//		min = sb.Size()
+	//	}
+	//	count++
+	//}
+	//log.Println("count:", count, "min", min)
 }
 func BenchmarkGoStdRpc(b *testing.B) {
 
@@ -191,26 +184,24 @@ func BenchmarkGoStdRpc(b *testing.B) {
 		go s.Accept(l)
 	})
 	b.ResetTimer()
-	done := make(chan *stdrpc.Call, b.N)
-
+	done := &sync.WaitGroup{}
+	done.Add(b.N)
 	div := b.N / 100
 	mod := b.N - div*100
 	if div < 100 {
 		for i := 0; i < div; i++ {
-			go stdNotify(done, 100)
+			go stdCall(done, 100)
 		}
 	} else {
 		for i := 0; i < 100; i++ {
-			go stdNotify(done, div)
+			go stdCall(done, div)
 		}
 	}
 	if mod > 0 {
-		go stdNotify(done, mod)
+		go stdCall(done, mod)
 	}
+	done.Wait()
 
-	for i := 0; i < b.N; i++ {
-		<-done
-	}
 }
 func stdNotify(done chan *stdrpc.Call, n int) {
 	c, err := stdrpc.Dial("tcp", "localhost:8888")
@@ -219,7 +210,28 @@ func stdNotify(done chan *stdrpc.Call, n int) {
 	}
 	for j := 0; j < n; j++ {
 		respmsg := &msg.AppendReq{}
-		c.Go("TestStdRpc.Test", testMsg, respmsg, done)
+		c.Go("TestStdRpc.Test", testMsg[int(fastrandn(10))], respmsg, done)
+		err = c.Call("TestStdRpc.Test", testMsg[int(fastrandn(10))], respmsg)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+func stdCall(waiter *sync.WaitGroup, n int) {
+	c, err := stdrpc.Dial("tcp", "localhost:8888")
+	if err != nil {
+		panic(err)
+	}
+	for j := 0; j < n; j++ {
+		if Delay > 0 {
+			time.Sleep(Delay)
+		}
+		respmsg := &msg.AppendReq{}
+		err = c.Call("TestStdRpc.Test", testMsg[int(fastrandn(10))], respmsg)
+		if err != nil {
+			panic(err)
+		}
+		waiter.Done()
 	}
 }
 
@@ -227,6 +239,10 @@ type TestStdRpc struct {
 }
 
 func (t *TestStdRpc) Test(req *msg.AppendReq, resp *msg.AppendReq) error {
-	resp = testMsg
+	resp.Id = testMsg[int(fastrandn(10))].Id
+	resp.LeaderCommit = testMsg[int(fastrandn(10))].LeaderCommit
+	resp.PrevLogIndex = testMsg[int(fastrandn(10))].PrevLogIndex
+	copy(resp.Logs, testMsg[int(fastrandn(10))].Logs)
+	resp.PrevLogTerm = testMsg[int(fastrandn(10))].PrevLogTerm
 	return nil
 }
