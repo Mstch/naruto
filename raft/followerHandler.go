@@ -1,11 +1,16 @@
 package raft
 
 import (
+	"errors"
 	"github.com/Mstch/naruto/helper/logger"
 	"github.com/Mstch/naruto/helper/quorum"
 	"github.com/Mstch/naruto/helper/timer"
 	"github.com/Mstch/naruto/raft/msg"
 	"sync/atomic"
+)
+
+var (
+	ErrorNotLeader = errors.New("current node is not leader")
 )
 
 type followerHandler struct {
@@ -105,4 +110,23 @@ func (f *followerHandler) doAppend(logs []*msg.Log) error {
 		}
 	}
 	return nil
+}
+
+func (f *followerHandler) onCmd(cmd *msg.Cmd) *msg.CmdResp {
+	resp := &msg.CmdResp{
+		IsLeader:   false,
+		LeaderAddr: memberManager.GetMembers()[leaderId].Address,
+	}
+	if isReadCmd(cmd) && cmd.ReadMode == msg.FollowerRead {
+		if res, err := apply(cmd); err != nil {
+			resp.Res = err.Error()
+			resp.Success = false
+			return resp
+		} else {
+			resp.Success = true
+			resp.Res = res
+			return resp
+		}
+	}
+	return resp
 }

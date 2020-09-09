@@ -39,3 +39,7 @@ func (c *candidateHandler) OnVoteMajority() {
 		LeaderCommit: atomic.LoadUint64(&lastCommitIndex),
 	})
 }
+
+func (c *candidateHandler) onCmd(cmd *msg.Cmd) *msg.CmdResp {
+	return fh.onCmd(cmd)
+}

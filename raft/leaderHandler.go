@@ -1,7 +1,9 @@
 package raft
 
 import (
+	"github.com/Mstch/naruto/helper/logger"
 	"github.com/Mstch/naruto/helper/quorum"
+	"github.com/Mstch/naruto/helper/util"
 	"github.com/Mstch/naruto/raft/msg"
 	"sync/atomic"
 	"time"
@@ -30,6 +32,69 @@ func (l *leaderHandler) onHeartbeatResp(arg *msg.HeartbeatResp) {
 
 func (l *leaderHandler) onAppendResp(arg *msg.AppendResp) {
 	leaseTimeout = time.Now().Add(4 * time.Second).UnixNano()
+}
+
+func (l *leaderHandler) onCmd(cmd *msg.Cmd) *msg.CmdResp {
+	if isReadCmd(cmd) {
+		switch cmd.ReadMode {
+		case msg.Lease:
+			return l.onLeaseRead(cmd)
+		case msg.ReadIndex:
+			return l.onReadIndex(cmd)
+		default:
+			if res, err := apply(cmd); err != nil {
+				return &msg.CmdResp{
+					Res:      err.Error(),
+					Success:  false,
+					IsLeader: true,
+				}
+			} else {
+				return &msg.CmdResp{
+					Res:      res,
+					Success:  true,
+					IsLeader: true,
+				}
+			}
+		}
+	} else {
+		log := &msg.Log{
+			Cmd:  cmd,
+			Term: atomic.LoadUint32(&nodeTerm),
+		}
+		prevLogIndex, prevLogTerm, err := appendOne(log, false)
+		if err != nil {
+			logger.Error("error when append write log,%s", err)
+
+		}
+		quorumId := quorum.RegQuorum(majority, func() {
+			util.SwapToMaxUint64(&lastCommitIndex, log.Index)
+		})
+		appendReq := &msg.AppendReq{
+			Id:           quorumId,
+			From:         self.Id,
+			Term:         nodeTerm,
+			PrevLogIndex: prevLogIndex,
+			PrevLogTerm:  prevLogTerm,
+			LeaderCommit: atomic.LoadUint64(&lastCommitIndex),
+			Logs:         make([]*msg.Log, 1),
+		}
+		appendReq.Logs[0] = log
+		broadcast("Append", appendReq)
+		quorum.Wait(quorumId)
+		err = applyTo(log.Index)
+		if err != nil {
+			return &msg.CmdResp{
+				Success:  false,
+				Res:      err.Error(),
+				IsLeader: false,
+			}
+		}
+		util.SwapToMaxUint64(&lastApplyIndex, log.Index)
+		return &msg.CmdResp{
+			Success:  true,
+			IsLeader: true,
+		}
+	}
 }
 
 func (l *leaderHandler) onLeaseRead(cmd *msg.Cmd) *msg.CmdResp {

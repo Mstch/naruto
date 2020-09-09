@@ -2,12 +2,10 @@ package raft
 
 import (
 	"github.com/Mstch/naruto/helper/logger"
-	"github.com/Mstch/naruto/helper/quorum"
 	"github.com/Mstch/naruto/helper/rpc"
 	"github.com/Mstch/naruto/raft/msg"
 	"github.com/gogo/protobuf/proto"
 	"sync/atomic"
-	"time"
 )
 
 const (
@@ -30,9 +28,9 @@ var (
 )
 
 func init() {
-	serverHandlerDict[follower] = make(map[string]func(req proto.Message) proto.Message, 3)
-	serverHandlerDict[candidate] = make(map[string]func(req proto.Message) proto.Message, 2)
-	serverHandlerDict[leader] = make(map[string]func(req proto.Message) proto.Message, 0)
+	serverHandlerDict[follower] = make(map[string]func(req proto.Message) proto.Message, 4)
+	serverHandlerDict[candidate] = make(map[string]func(req proto.Message) proto.Message, 3)
+	serverHandlerDict[leader] = make(map[string]func(req proto.Message) proto.Message, 1)
 	serverHandlerDict[follower]["Vote"] = func(req proto.Message) proto.Message {
 		return fh.onVoteReq(req.(*msg.VoteReq))
 	}
@@ -42,11 +40,21 @@ func init() {
 	serverHandlerDict[follower]["Append"] = func(req proto.Message) proto.Message {
 		return fh.onAppendReq(req.(*msg.AppendReq))
 	}
+	serverHandlerDict[follower]["Cmd"] = func(req proto.Message) proto.Message {
+		return fh.onCmd(req.(*msg.Cmd))
+	}
 	serverHandlerDict[candidate]["Heartbeat"] = func(req proto.Message) proto.Message {
 		return ch.onHeartbeatReq(req.(*msg.HeartbeatReq))
 	}
 	serverHandlerDict[candidate]["Append"] = func(req proto.Message) proto.Message {
 		return ch.onAppendReq(req.(*msg.AppendReq))
+	}
+	serverHandlerDict[candidate]["Cmd"] = func(req proto.Message) proto.Message {
+		return ch.onCmd(req.(*msg.Cmd))
+	}
+
+	serverHandlerDict[leader]["Cmd"] = func(req proto.Message) proto.Message {
+		return lh.onCmd(req.(*msg.Cmd))
 	}
 	clientHandlerDict[follower] = make(map[string]func(req proto.Message), 0)
 	clientHandlerDict[candidate] = make(map[string]func(req proto.Message), 1)
@@ -148,10 +156,12 @@ func regServerHandlers(server rpc.Server) {
 	}
 	err = server.RegHandler("Cmd", func(arg proto.Message) (res proto.Message) {
 		cmd := arg.(*msg.Cmd)
-		if isReadCmd(cmd) {
-			return commonReadHandler(cmd)
+		if h, ok := serverHandlerDict[atomic.LoadUint32(&nodeRule)]["Cmd"]; ok {
+			return h(cmd)
 		} else {
-			return commonWriteHandler(cmd)
+			return &msg.CmdResp{
+				Success: false,
+			}
 		}
 	}, cmdReq)
 }
@@ -184,73 +194,6 @@ func commitIndexInterceptor(commitIndex uint64) {
 		err := applyTo(commitIndex)
 		if err != nil {
 			logger.Error("apply to %d failed caused by %s", commitIndex, err)
-		}
-	}
-}
-
-func commonReadHandler(cmd *msg.Cmd) *msg.CmdResp {
-	if cmd.ReadMode == msg.FollowerRead {
-		res, err := apply(cmd)
-		if err != nil {
-			return &msg.CmdResp{
-				Res:     err.Error(),
-				Success: false,
-			}
-		}
-		return &msg.CmdResp{
-			Res:     res,
-			Success: true,
-		}
-	}
-	if atomic.LoadUint32(&nodeRule) == leader {
-		if cmd.ReadMode == msg.Lease {
-			if time.Now().UnixNano() > leaseTimeout {
-
-			}
-		}
-	}
-}
-func commonWriteHandler(cmd *msg.Cmd) *msg.CmdResp {
-	log := &msg.Log{
-		Cmd:  cmd,
-		Term: atomic.LoadUint32(&nodeTerm),
-	}
-	prevLogIndex, prevLogTerm, err := appendOne(log, false)
-	if err != nil {
-		logger.Error("error when append write log,%s", err)
-
-	}
-	if atomic.LoadUint32(&nodeRule) == leader {
-		quorumId := quorum.RegQuorum(majority, func() {})
-		appendReq := &msg.AppendReq{
-			Id:           quorumId,
-			From:         self.Id,
-			Term:         nodeTerm,
-			PrevLogIndex: prevLogIndex,
-			PrevLogTerm:  prevLogTerm,
-			LeaderCommit: atomic.LoadUint64(&lastCommitIndex),
-			Logs:         make([]*msg.Log, 1),
-		}
-		appendReq.Logs[0] = log
-		broadcast("Append", appendReq)
-		quorum.Wait(quorumId)
-		err := applyTo(log.Index)
-		if err != nil {
-			return &msg.CmdResp{
-				Success:  false,
-				Res:      err.Error(),
-				IsLeader: false,
-			}
-		}
-		return &msg.CmdResp{
-			Success:  true,
-			IsLeader: true,
-		}
-	} else {
-		return &msg.CmdResp{
-			Success:    false,
-			IsLeader:   false,
-			LeaderAddr: memberManager.GetMembers()[leaderId].Address,
 		}
 	}
 }
