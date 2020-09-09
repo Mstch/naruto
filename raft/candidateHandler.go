@@ -31,7 +31,7 @@ func (c *candidateHandler) onAppendReq(arg *msg.AppendReq) *msg.AppendResp {
 }
 
 func (c *candidateHandler) OnVoteMajority() {
-	logger.Info("receive majority vote")
+	logger.Info("become leader")
 	atomic.StoreUint32(&nodeRule, leader)
 	timer.Loop(heartbeatTimerOption)
 	broadcast("Heartbeat", &msg.HeartbeatReq{

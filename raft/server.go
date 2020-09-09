@@ -2,10 +2,12 @@ package raft
 
 import (
 	"github.com/Mstch/naruto/helper/logger"
+	"github.com/Mstch/naruto/helper/quorum"
 	"github.com/Mstch/naruto/helper/rpc"
 	"github.com/Mstch/naruto/raft/msg"
 	"github.com/gogo/protobuf/proto"
 	"sync/atomic"
+	"time"
 )
 
 const (
@@ -15,6 +17,8 @@ const (
 	heartbeatResp
 	appendReq
 	appendResp
+	cmdReq
+	cmdResp
 )
 
 var (
@@ -77,6 +81,12 @@ func regProtoMsg(register rpc.MessageFactoryRegister) {
 	register.RegMessageFactory(appendResp, true, func() proto.Message {
 		return &msg.AppendResp{}
 	})
+	register.RegMessageFactory(cmdReq, true, func() proto.Message {
+		return &msg.Cmd{}
+	})
+	register.RegMessageFactory(cmdResp, true, func() proto.Message {
+		return &msg.CmdResp{}
+	})
 }
 func regServerHandlers(server rpc.Server) {
 	err := server.RegHandler("Vote", func(arg proto.Message) (res proto.Message) {
@@ -136,6 +146,14 @@ func regServerHandlers(server rpc.Server) {
 	if err != nil {
 		panic(err)
 	}
+	err = server.RegHandler("Cmd", func(arg proto.Message) (res proto.Message) {
+		cmd := arg.(*msg.Cmd)
+		if isReadCmd(cmd) {
+			return commonReadHandler(cmd)
+		} else {
+			return commonWriteHandler(cmd)
+		}
+	}, cmdReq)
 }
 
 func StartupServer() {
@@ -170,8 +188,69 @@ func commitIndexInterceptor(commitIndex uint64) {
 	}
 }
 
+func commonReadHandler(cmd *msg.Cmd) *msg.CmdResp {
+	if cmd.ReadMode == msg.FollowerRead {
+		res, err := apply(cmd)
+		if err != nil {
+			return &msg.CmdResp{
+				Res:     err.Error(),
+				Success: false,
+			}
+		}
+		return &msg.CmdResp{
+			Res:     res,
+			Success: true,
+		}
+	}
+	if atomic.LoadUint32(&nodeRule) == leader {
+		if cmd.ReadMode == msg.Lease {
+			if time.Now().UnixNano() > leaseTimeout {
 
+			}
+		}
+	}
+}
+func commonWriteHandler(cmd *msg.Cmd) *msg.CmdResp {
+	log := &msg.Log{
+		Cmd:  cmd,
+		Term: atomic.LoadUint32(&nodeTerm),
+	}
+	prevLogIndex, prevLogTerm, err := appendOne(log, false)
+	if err != nil {
+		logger.Error("error when append write log,%s", err)
 
-func commonReadHandler(cmd *msg.Cmd) (string, error) {
-	return apply(cmd)
+	}
+	if atomic.LoadUint32(&nodeRule) == leader {
+		quorumId := quorum.RegQuorum(majority, func() {})
+		appendReq := &msg.AppendReq{
+			Id:           quorumId,
+			From:         self.Id,
+			Term:         nodeTerm,
+			PrevLogIndex: prevLogIndex,
+			PrevLogTerm:  prevLogTerm,
+			LeaderCommit: atomic.LoadUint64(&lastCommitIndex),
+			Logs:         make([]*msg.Log, 1),
+		}
+		appendReq.Logs[0] = log
+		broadcast("Append", appendReq)
+		quorum.Wait(quorumId)
+		err := applyTo(log.Index)
+		if err != nil {
+			return &msg.CmdResp{
+				Success:  false,
+				Res:      err.Error(),
+				IsLeader: false,
+			}
+		}
+		return &msg.CmdResp{
+			Success:  true,
+			IsLeader: true,
+		}
+	} else {
+		return &msg.CmdResp{
+			Success:    false,
+			IsLeader:   false,
+			LeaderAddr: memberManager.GetMembers()[leaderId].Address,
+		}
+	}
 }

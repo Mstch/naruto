@@ -76,6 +76,7 @@ func broadcast(name string, msg proto.Message) {
 		}(client)
 	}
 }
+
 func sendTo(to uint32, name string, msg proto.Message) {
 	client := clientMap[to]
 	err := client.Notify(name, msg)

@@ -43,9 +43,13 @@ func (f *followerHandler) onVoteReq(arg *msg.VoteReq) *msg.VoteResp {
 	}
 }
 
-func (f *followerHandler) onHeartbeatReq(_ *msg.HeartbeatReq) *msg.HeartbeatResp {
+func (f *followerHandler) onHeartbeatReq(req *msg.HeartbeatReq) *msg.HeartbeatResp {
+	if oldLeader := atomic.SwapUint32(&leaderId, req.From); oldLeader != req.From {
+		logger.Info("new leader is %d", req.From)
+	}
 	timer.Loop(electionTimerOption)
 	return &msg.HeartbeatResp{
+		Id:           req.Id,
 		From:         self.Id,
 		Term:         atomic.LoadUint32(&nodeTerm),
 		Success:      true,
@@ -53,21 +57,24 @@ func (f *followerHandler) onHeartbeatReq(_ *msg.HeartbeatReq) *msg.HeartbeatResp
 	}
 }
 
-func (f *followerHandler) onAppendReq(arg *msg.AppendReq) *msg.AppendResp {
+func (f *followerHandler) onAppendReq(req *msg.AppendReq) *msg.AppendResp {
+	if oldLeader := atomic.SwapUint32(&nodeRule, req.From); oldLeader != req.From {
+		logger.Info("new leader is %d", req.From)
+	}
 	timer.Loop(electionTimerOption)
-	logs := arg.Logs
-	if arg.PrevLogIndex == 0 {
-		err := f.doAppend(arg.Logs)
+	logs := req.Logs
+	if req.PrevLogIndex == 0 {
+		err := f.doAppend(req.Logs)
 		if err != nil {
 			return nil
 		}
 	}
-	checkLog, err := getLog(arg.PrevLogIndex)
+	checkLog, err := getLog(req.PrevLogIndex)
 	if err != nil {
 		return nil
 	}
 	success := false
-	if checkLog.Term == arg.PrevLogTerm {
+	if checkLog.Term == req.PrevLogTerm {
 		err := f.doAppend(logs)
 		if err != nil {
 			return nil
@@ -75,7 +82,7 @@ func (f *followerHandler) onAppendReq(arg *msg.AppendReq) *msg.AppendResp {
 		success = true
 	}
 	return &msg.AppendResp{
-		Id:           arg.Id,
+		Id:           req.Id,
 		From:         id,
 		Term:         nodeTerm,
 		Success:      success,
@@ -85,7 +92,7 @@ func (f *followerHandler) onAppendReq(arg *msg.AppendReq) *msg.AppendResp {
 
 func (f *followerHandler) doAppend(logs []*msg.Log) error {
 	if len(logs) == 1 {
-		err := appendOne(logs[0], true)
+		_, _, err := appendOne(logs[0], true)
 		if err != nil {
 			logger.Error("append one log failed,caused by %s", err)
 			return err

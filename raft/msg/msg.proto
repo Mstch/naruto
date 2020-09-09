@@ -25,8 +25,10 @@ message AppendReq {
 }
 
 message HeartbeatReq {
-    uint32 term = 1;
-    uint64 leaderCommit = 2;
+    uint64 id = 1;
+    uint32 from = 2;
+    uint32 term = 3;
+    uint64 leaderCommit = 4;
 }
 
 
@@ -68,14 +70,16 @@ message AppendResp {
 
 }
 message HeartbeatResp {
-    uint32 term = 1;
-    uint32 from = 2;
-    bool success = 3;
-    uint64 lastLogIndex = 4;
+    uint64 id = 1;
+    uint32 term = 2;
+    uint32 from = 3;
+    bool success = 4;
+    uint64 lastLogIndex = 5;
 }
 
 message CmdResp {
     string res = 1;
-    bool isLeader = 2;
-    string leaderAddr = 3;
+    bool success = 2;
+    bool isLeader = 3;
+    string leaderAddr = 4;
 }

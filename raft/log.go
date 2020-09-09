@@ -39,19 +39,19 @@ func StartLogDB() {
 	}
 }
 
-func appendOne(log *msg.Log, fromReplicate bool) error {
+func appendOne(log *msg.Log, fromReplicate bool) (uint64, uint32, error) {
 	buf := make([]byte, log.Size())
 	err := log.Unmarshal(buf)
 	if err != nil {
-		return err
+		return 0, 0, err
 	}
 	if fromReplicate {
 		if log.Index == 0 || log.Term == 0 {
-			return errors.New("log marked as replicate,but not set index")
+			return 0, 0, errors.New("log marked as replicate,but not set index")
 		}
 		err = logDB.Set(util.UInt64ToBytes(log.Index), buf)
 		if err != nil {
-			return err
+			return 0, 0, err
 		}
 	} else {
 		//先占地,然后再写
@@ -61,20 +61,23 @@ func appendOne(log *msg.Log, fromReplicate bool) error {
 	}
 	err = logDB.Set(util.UInt64ToBytes(log.Index), buf)
 	if err != nil {
-		return err
+		return 0, 0, err
 	}
-	atomic.StoreUint64(&lastLogIndex, util.Max(atomic.LoadUint64(&lastLogIndex), log.Index))
-	atomic.StoreUint32(&lastLogTerm, log.Term)
-	return nil
+	prevLogIndex := util.SwapToMaxUint64(&lastLogIndex, log.Index)
+	prevLogTerm := util.SwapToMaxUint32(&lastLogTerm, log.Term)
+	return prevLogIndex, prevLogTerm, nil
 }
 func batchAppend(logs []*msg.Log, fromReplicate bool) error {
 	l := len(logs)
+	if l == 0 {
+		return nil
+	}
 	ks := make([][]byte, l)
 	vs := make([][]byte, l)
 	if fromReplicate {
-		lastIndex := uint64(0)
+		lastIndex := logs[l-1].Index
+		lastTerm := logs[l-1].Term
 		for i, log := range logs {
-			lastIndex = log.Index
 			ks[i] = util.UInt64ToBytes(log.Index)
 			vs[i] = make([]byte, log.Size())
 			err := log.Unmarshal(vs[i])
@@ -86,8 +89,8 @@ func batchAppend(logs []*msg.Log, fromReplicate bool) error {
 		if err != nil {
 			return err
 		}
-		atomic.StoreUint64(&lastLogIndex, util.Max(atomic.LoadUint64(&lastLogIndex), lastIndex))
-		atomic.StoreUint32(&lastLogTerm, atomic.LoadUint32(&nodeTerm))
+		util.SwapToMaxUint64(&lastLogIndex, lastIndex)
+		util.SwapToMaxUint32(&lastLogTerm, lastTerm)
 		return nil
 	}
 	//先占地,然后再写
@@ -109,13 +112,13 @@ func batchAppend(logs []*msg.Log, fromReplicate bool) error {
 	if err != nil {
 		return err
 	}
-	atomic.StoreUint64(&lastLogIndex, util.Max(atomic.LoadUint64(&lastLogIndex), lastIndex))
-	atomic.StoreUint32(&lastLogTerm, atomic.LoadUint32(&nodeTerm))
+	util.SwapToMaxUint64(&lastLogIndex, lastIndex)
+	util.SwapToMaxUint32(&lastLogTerm, term)
 	return nil
 }
 
 func applyTo(index uint64) error {
-	atomic.SwapUint64(&lastCommitIndex, util.Max(atomic.LoadUint64(&lastCommitIndex), index))
+	atomic.SwapUint64(&lastCommitIndex, util.MaxUint64(atomic.LoadUint64(&lastCommitIndex), index))
 	start := util.UInt64ToBytes(atomic.LoadUint64(&lastApplyIndex))
 	end := make([]byte, index)
 	_, err := logDB.Iter(start, end, false, func(k, v []byte) (interface{}, error) {
@@ -126,9 +129,7 @@ func applyTo(index uint64) error {
 		}
 		_, err = apply(log.Cmd)
 		if err == nil {
-			if atomic.LoadUint64(&lastApplyIndex) < log.Index {
-				atomic.StoreUint64(&lastApplyIndex, log.Index)
-			}
+			util.SwapToMaxUint64(&lastApplyIndex, log.Index)
 		}
 		return nil, err
 	})

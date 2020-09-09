@@ -26,6 +26,7 @@ var (
 	lastApplyIndex  uint64
 	leaderId        uint32
 	matchIndex      map[uint32]uint64
+	leaseTimeout    int64
 )
 var statDB *db.DB
 
