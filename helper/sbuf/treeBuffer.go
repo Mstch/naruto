@@ -3,12 +3,18 @@ package sbuf
 import rbt "github.com/emirpasic/gods/trees/redblacktree"
 
 type TreeBuffer struct {
-	tree *rbt.Tree
+	tree       *rbt.Tree
+	concurSafe bool
 }
 
-func NewTree() *TreeBuffer {
+type ConcurSafeNode struct {
+	buf []byte
+
+}
+func NewTree(concurSafe bool) *TreeBuffer {
 	return &TreeBuffer{
-		tree: rbt.NewWithIntComparator(),
+		tree:       rbt.NewWithIntComparator(),
+		concurSafe: concurSafe,
 	}
 }
 
